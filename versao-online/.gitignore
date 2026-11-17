@@ -1,0 +1,5 @@
+# Cópias manuais antigas (o histórico agora fica no git)
+_backup/
+
+# Backups de dados exportados pelo sistema (contêm dados de clientes)
+backup-obras-*.json
