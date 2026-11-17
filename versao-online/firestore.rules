@@ -1,12 +1,12 @@
 rules_version = '2';
 // Só pessoas logadas com e-mail verificado do domínio da empresa podem ler e gravar.
-// TROQUE "SEU-DOMINIO.com.br" pelo domínio do Workspace (igual ao js/firebase-config.js).
+// Domínio permitido: sbtechwall.com (manter igual ao js/firebase-config.js).
 service cloud.firestore {
   match /databases/{database}/documents {
     function daEmpresa() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email.lower().matches('.*@SEU-DOMINIO[.]com[.]br$');
+        && request.auth.token.email.lower().matches('.*@sbtechwall[.]com$');
     }
     match /{tabela}/{id} {
       allow read, write: if daEmpresa();

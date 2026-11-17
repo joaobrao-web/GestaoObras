@@ -7,11 +7,12 @@
       Mantenha igual ao que está no arquivo firestore.rules.
    ===================================================================== */
 const FIREBASE_CONFIG = {
-  apiKey: "COLE_AQUI",
-  authDomain: "COLE_AQUI.firebaseapp.com",
-  projectId: "COLE_AQUI",
-  storageBucket: "COLE_AQUI.appspot.com",
-  messagingSenderId: "COLE_AQUI",
-  appId: "COLE_AQUI"
+  apiKey: "AIzaSyD2vT43bzMu_GNZ5z4PZ7CzZBWhtFDCaZE",
+  authDomain: "sbtech-788eb.firebaseapp.com",
+  projectId: "sbtech-788eb",
+  storageBucket: "sbtech-788eb.firebasestorage.app",
+  messagingSenderId: "80286659120",
+  appId: "1:80286659120:web:03bc9f987d21124afcf3f5",
+  measurementId: "G-R0HYGCZWFF"
 };
-const DOMINIO_PERMITIDO = "SEU-DOMINIO.com.br";
+const DOMINIO_PERMITIDO = "sbtechwall.com";
