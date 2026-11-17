@@ -1,0 +1,98 @@
+/* =====================================================================
+   CONFIGURAÇÃO — para mudar campos, status ou categorias, edite aqui.
+   ===================================================================== */
+const STATUS_OBRA = ['Orçamento','Em andamento','Pausada','Concluída'];
+const STATUS_PROPOSTA = ['Rascunho','Enviada','Aprovada','Recusada'];
+const CATEGORIAS  = ['Material','Mão de obra','Prestador de serviço','Equipamento','Transporte','Impostos','Administrativo','Recebimento de cliente','Outros'];
+
+const TABELAS = {
+  obras: { titulo:'Obras', icone:'🏠', singular:'obra', campos:[
+    {k:'nome', l:'Nome da obra', obrig:true, full:true},
+    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},
+    {k:'status', l:'Status', tipo:'select', opcoes:STATUS_OBRA},
+    {k:'endereco', l:'Endereço', full:true},
+    {k:'valor', l:'Valor do contrato (R$)', tipo:'dinheiro'},
+    {k:'responsavel', l:'Responsável / Mestre de obras'},
+    {k:'inicio', l:'Data de início', tipo:'data'},
+    {k:'previsao', l:'Previsão de término', tipo:'data'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['nome','cliente','status','valor','inicio','previsao']},
+
+  propostas: { titulo:'Propostas', icone:'📝', singular:'proposta', campos:[
+    {k:'numero', l:'Nº da proposta'},
+    {k:'data', l:'Data', tipo:'data', obrig:true},
+    {k:'nome', l:'Título / Serviço proposto', obrig:true, full:true},
+    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes', obrig:true},
+    {k:'status', l:'Status', tipo:'select', opcoes:STATUS_PROPOSTA, obrig:true},
+    {k:'obra', l:'Obra vinculada', tipo:'ref', ref:'obras'},
+    {k:'validade', l:'Válida até', tipo:'data'},
+    {k:'itens', l:'Itens / Serviços', tipo:'itens', full:true},
+    {k:'desconto', l:'Desconto (R$)', tipo:'dinheiro'},
+    {k:'prazo', l:'Prazo de execução'},
+    {k:'pagamento', l:'Condições de pagamento', full:true},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+    {k:'total', l:'Valor total (R$)', tipo:'dinheiro', calc:true},
+  ], colunas:['numero','data','nome','cliente','obra','status','total'],
+  novo: () => {
+    const ano = new Date().getFullYear();
+    const seq = DB.propostas.filter(p => String(p.numero||'').startsWith(ano+'-')).length + 1;
+    const val = new Date(Date.now()+15*864e5).toISOString().slice(0,10);
+    return {numero:`${ano}-${String(seq).padStart(3,'0')}`, status:'Rascunho', validade:val,
+            pagamento:'50% na aprovação e 50% na conclusão'};
+  }},
+
+  financeiro: { titulo:'Financeiro', icone:'💰', singular:'lançamento', campos:[
+    {k:'tipo', l:'Tipo', tipo:'select', opcoes:['Despesa','Receita'], obrig:true},
+    {k:'data', l:'Data', tipo:'data', obrig:true},
+    {k:'descricao', l:'Descrição', obrig:true, full:true},
+    {k:'obra', l:'Obra', tipo:'ref', ref:'obras'},
+    {k:'categoria', l:'Categoria', tipo:'select', opcoes:CATEGORIAS},
+    {k:'valor', l:'Valor (R$)', tipo:'dinheiro', obrig:true},
+    {k:'pago', l:'Situação', tipo:'select', opcoes:['Pago','A pagar / A receber']},
+    {k:'fornecedor', l:'Fornecedor', tipo:'ref', ref:'fornecedores'},
+    {k:'prestador', l:'Prestador de serviço', tipo:'ref', ref:'prestadores'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['data','tipo','descricao','obra','categoria','pago','valor']},
+
+  clientes: { titulo:'Clientes', icone:'👤', singular:'cliente', campos:[
+    {k:'nome', l:'Nome', obrig:true, full:true},
+    {k:'telefone', l:'Telefone'},
+    {k:'email', l:'E-mail'},
+    {k:'documento', l:'CPF / CNPJ'},
+    {k:'endereco', l:'Endereço'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['nome','telefone','email','documento']},
+
+  funcionarios: { titulo:'Funcionários', icone:'👷', singular:'funcionário', campos:[
+    {k:'nome', l:'Nome', obrig:true, full:true},
+    {k:'funcao', l:'Função'},
+    {k:'telefone', l:'Telefone'},
+    {k:'obra', l:'Obra atual', tipo:'ref', ref:'obras'},
+    {k:'pagamento', l:'Diária / Salário (R$)', tipo:'dinheiro'},
+    {k:'admissao', l:'Data de admissão', tipo:'data'},
+    {k:'documento', l:'CPF'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['nome','funcao','telefone','obra','pagamento']},
+
+  prestadores: { titulo:'Prestadores', icone:'🔧', singular:'prestador', campos:[
+    {k:'nome', l:'Nome / Empresa', obrig:true, full:true},
+    {k:'servico', l:'Serviço que presta', obrig:true},
+    {k:'telefone', l:'Telefone / WhatsApp'},
+    {k:'cobranca', l:'Forma de cobrança', tipo:'select', opcoes:['Diária','Empreitada','Por m²','Por hora','Por serviço']},
+    {k:'valor', l:'Valor combinado (R$)', tipo:'dinheiro'},
+    {k:'obra', l:'Obra atual', tipo:'ref', ref:'obras'},
+    {k:'documento', l:'CPF / CNPJ'},
+    {k:'pix', l:'Chave PIX'},
+    {k:'banco', l:'Banco / Agência / Conta'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['nome','servico','telefone','obra','cobranca','valor']},
+
+  fornecedores: { titulo:'Fornecedores', icone:'🚚', singular:'fornecedor', campos:[
+    {k:'nome', l:'Nome / Empresa', obrig:true, full:true},
+    {k:'produto', l:'O que fornece'},
+    {k:'contato', l:'Pessoa de contato'},
+    {k:'telefone', l:'Telefone'},
+    {k:'email', l:'E-mail'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['nome','produto','contato','telefone']},
+};
