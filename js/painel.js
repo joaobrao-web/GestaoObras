@@ -48,6 +48,7 @@ function painel(){
     <div class="card" style="cursor:pointer" onclick="ir('propostas')"><div class="lbl">Propostas aguardando resposta (${enviadas.length})</div><div class="val">${brl(totEnv)}</div></div>
   </div>
   ${graficosPainel()}
+  <div class="box"><h3>Próximos compromissos</h3>${tabelaCompromissos(proximos(), 'Nada agendado. Use a aba <b>📅 Agenda</b> para marcar visitas, medições e entregas.')}</div>
   <div class="box"><h3>Obras ativas — clique para ver detalhes</h3>
     ${obras.length ? `<div class="tablewrap"><table><tr><th>Obra</th><th>Status</th><th class="num">Contrato</th><th class="num">Recebido</th><th></th><th class="num">Gasto</th><th class="num">Resultado</th></tr>${linhasObras}</table></div>`
       : `<div class="empty">Nenhuma obra ativa. Clique em <b>+ Nova obra</b> para começar.</div>`}

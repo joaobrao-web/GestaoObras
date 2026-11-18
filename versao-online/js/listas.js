@@ -13,11 +13,13 @@ function lista(t){
     if (f.tipo) rows = rows.filter(r => r.tipo === f.tipo);
     if (f.mes)  rows = rows.filter(r => (r.data||'').startsWith(f.mes));
     rows.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  } else if (t==='propostas' || t==='contratos') rows.sort((a,b)=>(b.data||'').localeCompare(a.data||'') || String(b.numero).localeCompare(String(a.numero)));
+  } else if (t==='agenda') rows.sort((a,b)=>((b.data||'')+(b.hora||'')).localeCompare((a.data||'')+(a.hora||'')));
+  else if (t==='propostas' || t==='contratos') rows.sort((a,b)=>(b.data||'').localeCompare(a.data||'') || String(b.numero).localeCompare(String(a.numero)));
   else rows.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
 
   const cols = T.colunas.map(k => T.campos.find(c=>c.k===k));
-  const extra = t==='financeiro' ? `
+  const extra = t==='agenda' ? `<button class="btn sec" onclick="AGENDA.modo='mes';render()">📅 Ver calendário</button>`
+    : t==='financeiro' ? `
     <select onchange="filtros.financeiro.obra=this.value;render()"><option value="">Todas as obras</option>
       ${DB.obras.map(o=>`<option value="${o.id}" ${f.obra===o.id?'selected':''}>${esc(o.nome)}</option>`).join('')}</select>
     <select onchange="filtros.financeiro.tipo=this.value;render()"><option value="">Receitas e despesas</option>

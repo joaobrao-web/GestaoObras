@@ -12,6 +12,7 @@ function ir(t){ tela = t; render(); window.scrollTo(0,0); }
 function render(){
   menu();
   document.getElementById('main').innerHTML = tela === 'painel' ? painel()
+    : tela === 'agenda' ? agenda()
     : tela.startsWith('obra:') ? detalheObra(tela.slice(5))
     : tela.startsWith('proposta:') ? verProposta(tela.slice(9)) : lista(tela);
 }

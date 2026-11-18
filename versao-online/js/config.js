@@ -5,8 +5,28 @@ const STATUS_OBRA = ['Orçamento','Em andamento','Pausada','Concluída'];
 const STATUS_PROPOSTA = ['Rascunho','Enviada','Aprovada','Recusada'];
 const STATUS_CONTRATO = ['Em elaboração','Aguardando assinatura','Em vigor','Encerrado','Cancelado'];
 const CATEGORIAS  = ['Material','Mão de obra','Prestador de serviço','Equipamento','Transporte','Impostos','Administrativo','Recebimento de cliente','Outros'];
+const STATUS_AGENDA = ['Agendado','Concluído','Cancelado'];
+/* tipos de compromisso e a cor de cada um no calendário */
+const TIPOS_AGENDA = {'Visita técnica':'#22d3ee','Medição':'#a78bfa','Entrega de material':'#fbbf24','Reunião':'#3b82f6',
+  'Início de obra':'#34d399','Vistoria':'#f472b6','Pagamento':'#f43f5e','Outro':'#94a3b8'};
 
 const TABELAS = {
+  agenda: { titulo:'Agenda', icone:'📅', singular:'compromisso', campos:[
+    {k:'nome', l:'Título do compromisso', obrig:true, full:true},
+    {k:'data', l:'Data', tipo:'data', obrig:true},
+    {k:'tipo', l:'Tipo', tipo:'select', opcoes:Object.keys(TIPOS_AGENDA), obrig:true},
+    {k:'hora', l:'Hora de início', tipo:'hora'},
+    {k:'horaFim', l:'Hora de término', tipo:'hora'},
+    {k:'obra', l:'Obra', tipo:'ref', ref:'obras'},
+    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},
+    {k:'responsavel', l:'Responsável'},
+    {k:'status', l:'Status', tipo:'select', opcoes:STATUS_AGENDA, obrig:true},
+    {k:'local', l:'Local / Endereço', full:true},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['data','hora','nome','tipo','obra','responsavel','status'],
+  novo: () => ({tipo:'Visita técnica', status:'Agendado',
+    responsavel: typeof USUARIO !== 'undefined' && USUARIO ? (USUARIO.displayName || USUARIO.email) : ''})},
+
   obras: { titulo:'Obras', icone:'🏠', singular:'obra', campos:[
     {k:'nome', l:'Nome da obra', obrig:true, full:true},
     {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},

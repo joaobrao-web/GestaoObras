@@ -19,6 +19,7 @@ function detalheObra(id){
     <button class="btn sec" onclick="window.print()">🖨 Imprimir</button>
     <button class="btn sec" onclick="abrir('obras','${id}')">✏️ Editar obra</button>
     <button class="btn sec" onclick="abrir('propostas',null,{obra:'${id}',cliente:'${o.cliente||''}',nome:${esc(JSON.stringify(o.nome||''))}})">+ Proposta</button>
+    <button class="btn sec" onclick="abrir('agenda',null,{obra:'${id}',cliente:'${o.cliente||''}',local:${esc(JSON.stringify(o.endereco||''))}})">+ Compromisso</button>
     <button class="btn" onclick="abrir('financeiro',null,{obra:'${id}'})">+ Lançamento</button></div></div>
   <div class="cards">
     <div class="card"><div class="lbl">Valor do contrato</div><div class="val">${brl(o.valor)}</div></div>
@@ -42,6 +43,7 @@ function detalheObra(id){
     ${lanc.map(f=>`<tr class="click" onclick="abrir('financeiro','${f.id}')"><td>${dataBR(f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(f.descricao)}</td><td>${esc(f.categoria)}</td><td>${etiqueta(f.pago||'')}</td><td class="num">${brl(f.valor)}</td></tr>`).join('')}
     </table></div>`:`<div class="empty">Nenhum lançamento ainda.</div>`}
   </div>
+  <div class="box"><h3>Agenda desta obra — próximos compromissos</h3>${tabelaCompromissos(proximos(e => e.obra===id, 50), 'Nenhum compromisso agendado para esta obra.')}</div>
   <div class="box"><h3>Propostas desta obra</h3>
     ${props.length?`<div class="tablewrap"><table><tr><th>Nº</th><th>Data</th><th>Título</th><th>Status</th><th class="num">Valor</th></tr>
     ${props.map(p=>`<tr class="click" onclick="ir('proposta:${p.id}')"><td>${esc(p.numero)}</td><td>${dataBR(p.data)}</td><td>${esc(p.nome)}</td><td>${etiqueta(p.status||'')}</td><td class="num">${brl(p.total)}</td></tr>`).join('')}

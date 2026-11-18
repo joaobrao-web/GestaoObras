@@ -193,3 +193,33 @@ body:not(.logado) .app{display:none}
 .usuario{display:flex;align-items:center;gap:8px;margin-left:4px;padding-left:12px;border-left:1px solid var(--line);font-size:13px;color:var(--ink);font-weight:600}
 .usuario span{max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .salvando{align-self:center;font-size:12px;color:var(--muted);min-width:70px;text-align:right}
+
+/* ===== Agenda ===== */
+.mes-atual{min-width:150px;text-align:center;font-weight:700;color:#fff;text-transform:capitalize;align-self:center;font-size:16px}
+.leg-tipos{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:12px;color:var(--muted);margin:-8px 0 14px}
+.leg-tipos i{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px}
+.cal{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.cal .sem{font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);text-align:center;padding:2px 0 6px;font-weight:700}
+.dia{min-height:110px;min-width:0;background:rgba(255,255,255,.025);border:1px solid var(--line);border-radius:12px;padding:6px;cursor:pointer;display:flex;flex-direction:column;gap:3px;transition:.15s}
+.dia:hover{border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.05)}
+.dia.fora{opacity:.35}
+.dia .n{font-size:12px;color:var(--muted);font-weight:700;align-self:flex-end;width:26px;height:26px;display:grid;place-items:center;border-radius:50%;flex:none}
+.dia.hoje{border-color:rgba(34,211,238,.45)}
+.dia.hoje .n{background:linear-gradient(135deg,#22d3ee,#3b82f6);color:#fff;box-shadow:var(--glow)}
+.ev{font-size:12px;line-height:1.35;padding:3px 7px;border-radius:6px;background:color-mix(in srgb,var(--c) 18%,transparent);border-left:3px solid var(--c);color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ev:hover{background:color-mix(in srgb,var(--c) 32%,transparent)}
+.ev b{color:var(--c);margin-right:4px}
+.ev.feito{opacity:.5}.ev.cancel{opacity:.4;text-decoration:line-through}
+.mais{font-size:11px;color:var(--muted);padding-left:4px}
+a.gcal{color:var(--accent);text-decoration:none;font-size:13px;font-weight:600;padding:4px 10px;border-radius:999px;border:1px solid rgba(34,211,238,.3)}
+a.gcal:hover{background:rgba(34,211,238,.1)}
+@media (max-width:700px){
+  .cal{gap:3px}
+  .dia{min-height:58px;padding:3px;border-radius:8px}
+  .dia .n{width:22px;height:22px;font-size:11px}
+  .ev{font-size:0;padding:0;height:5px;border-left:0;background:var(--c)}
+  .ev b{display:none}
+  .mais{font-size:10px;padding:0}
+  .mes-atual{min-width:0;flex:1}
+}
+@media print{.dia{background:#fff}.leg-tipos{color:#333}}

@@ -14,6 +14,7 @@ function abrir(t, id, padrao={}){
     else if (c.tipo==='texto') inp = `<textarea name="${c.k}">${esc(v)}</textarea>`;
     else if (c.tipo==='data') inp = `<input type="date" name="${c.k}" value="${esc(v)}">`;
     else if (c.tipo==='dinheiro') inp = `<input type="number" step="0.01" min="0" name="${c.k}" value="${esc(v)}" placeholder="0,00">`;
+    else if (c.tipo==='hora') inp = `<input type="time" name="${c.k}" value="${esc(v)}">`;
     else inp = `<input name="${c.k}" value="${esc(v)}">`;
     return `<div class="${c.full?'full':''}"><label>${c.l}${c.obrig?' *':''}</label>${inp}</div>`;
   };
@@ -22,7 +23,8 @@ function abrir(t, id, padrao={}){
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
       <div class="grid">${T.campos.map(campo).join('')}</div>
       <div class="actions">
-        <div>${id?`<button type="button" class="btn del" onclick="excluir('${t}','${id}')">🗑 Excluir</button>`:''}</div>
+        <div>${id?`<button type="button" class="btn del" onclick="excluir('${t}','${id}')">🗑 Excluir</button>`:''}
+          ${t==='agenda'?`<button type="button" class="btn sec" onclick="abrirGoogle(this.form)" title="Abre o Google Agenda já preenchido, para receber lembrete no celular">📅 Google Agenda</button>`:''}</div>
         <div><button type="button" class="btn sec" onclick="fechar()">Cancelar</button><button class="btn">Salvar</button></div>
       </div>
     </form></div>`;
