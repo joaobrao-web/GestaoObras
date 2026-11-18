@@ -3,6 +3,7 @@
    ===================================================================== */
 const STATUS_OBRA = ['Orçamento','Em andamento','Pausada','Concluída'];
 const STATUS_PROPOSTA = ['Rascunho','Enviada','Aprovada','Recusada'];
+const STATUS_CONTRATO = ['Em elaboração','Aguardando assinatura','Em vigor','Encerrado','Cancelado'];
 const CATEGORIAS  = ['Material','Mão de obra','Prestador de serviço','Equipamento','Transporte','Impostos','Administrativo','Recebimento de cliente','Outros'];
 
 const TABELAS = {
@@ -39,6 +40,28 @@ const TABELAS = {
     const val = new Date(Date.now()+15*864e5).toISOString().slice(0,10);
     return {numero:`${ano}-${String(seq).padStart(3,'0')}`, status:'Rascunho', validade:val,
             pagamento:'50% na aprovação e 50% na conclusão'};
+  }},
+
+  contratos: { titulo:'Contratos', icone:'📄', singular:'contrato', campos:[
+    {k:'numero', l:'Nº do contrato'},
+    {k:'data', l:'Data de assinatura', tipo:'data'},
+    {k:'nome', l:'Objeto do contrato', obrig:true, full:true},
+    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes', obrig:true},
+    {k:'status', l:'Status', tipo:'select', opcoes:STATUS_CONTRATO, obrig:true},
+    {k:'obra', l:'Obra vinculada', tipo:'ref', ref:'obras'},
+    {k:'proposta', l:'Proposta de origem', tipo:'ref', ref:'propostas'},
+    {k:'valor', l:'Valor do contrato (R$)', tipo:'dinheiro'},
+    {k:'inicio', l:'Início da vigência', tipo:'data'},
+    {k:'termino', l:'Fim da vigência', tipo:'data'},
+    {k:'pagamento', l:'Condições de pagamento', full:true},
+    {k:'garantia', l:'Garantia'},
+    {k:'arquivo', l:'Link do arquivo (PDF / Drive)'},
+    {k:'obs', l:'Observações', tipo:'texto', full:true},
+  ], colunas:['numero','data','nome','cliente','obra','status','valor'],
+  novo: () => {
+    const ano = new Date().getFullYear();
+    const seq = DB.contratos.filter(c => String(c.numero||'').startsWith('CT-'+ano+'-')).length + 1;
+    return {numero:`CT-${ano}-${String(seq).padStart(3,'0')}`, status:'Em elaboração', data:''};
   }},
 
   financeiro: { titulo:'Financeiro', icone:'💰', singular:'lançamento', campos:[

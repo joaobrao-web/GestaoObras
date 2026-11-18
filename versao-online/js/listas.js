@@ -13,7 +13,7 @@ function lista(t){
     if (f.tipo) rows = rows.filter(r => r.tipo === f.tipo);
     if (f.mes)  rows = rows.filter(r => (r.data||'').startsWith(f.mes));
     rows.sort((a,b)=>(b.data||'').localeCompare(a.data||''));
-  } else if (t==='propostas') rows.sort((a,b)=>(b.data||'').localeCompare(a.data||'') || String(b.numero).localeCompare(String(a.numero)));
+  } else if (t==='propostas' || t==='contratos') rows.sort((a,b)=>(b.data||'').localeCompare(a.data||'') || String(b.numero).localeCompare(String(a.numero)));
   else rows.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
 
   const cols = T.colunas.map(k => T.campos.find(c=>c.k===k));

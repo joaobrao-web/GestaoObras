@@ -3,3 +3,6 @@ _backup/
 
 # Backups de dados exportados pelo sistema (contêm dados de clientes)
 backup-obras-*.json
+
+# Cache do comando de publicar do Firebase
+.firebase/
