@@ -18,6 +18,7 @@ function lista(t){
   else rows.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
 
   const cols = T.colunas.map(k => T.campos.find(c=>c.k===k));
+  const iClip = Math.max(0, cols.findIndex(c=>c.k==='nome'));   // coluna que mostra o 📎 de anexos
   const extra = t==='agenda' ? `<button class="btn sec" onclick="AGENDA.modo='mes';render()">📅 Ver calendário</button>`
     : t==='financeiro' ? `
     <select onchange="filtros.financeiro.obra=this.value;render()"><option value="">Todas as obras</option>
@@ -47,7 +48,7 @@ function lista(t){
   ${totais}
   <div class="tablewrap">${rows.length ? `<table>
     <tr>${cols.map(c=>`<th class="${c.tipo==='dinheiro'?'num':''}">${c.l.replace(' (R$)','')}</th>`).join('')}</tr>
-    ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map(c=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c,r[c.k])}</td>`).join('')}</tr>`).join('')}
+    ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map((c,i)=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c,r[c.k])}${i===iClip && (r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>`).join('')}</tr>`).join('')}
   </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`;
 }
 function focoBusca(){ const b=document.getElementById('busca'); if(b){ b.focus(); b.setSelectionRange(b.value.length,b.value.length);} }

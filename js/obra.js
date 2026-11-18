@@ -35,6 +35,7 @@ function detalheObra(id){
     <b>Início:</b> ${dataBR(o.inicio)||'—'} &nbsp; <b>Previsão:</b> ${dataBR(o.previsao)||'—'}</p>
     ${o.obs?`<p style="white-space:pre-wrap">${esc(o.obs)}</p>`:''}
   </div>
+  <div class="box"><h3>📎 Documentos da obra</h3><div class="anx-box" data-anx="obras:${id}">${htmlAnexos('obras', id)}</div></div>
   ${Object.keys(porCat).length?`<div class="box"><h3>Gastos por categoria</h3><div class="tablewrap"><table>
     ${Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<tr><td>${esc(c)}</td><td style="width:50%"><div class="bar"><i style="width:${v/r.desp*100}%"></i></div></td><td class="num">${brl(v)}</td></tr>`).join('')}
   </table></div></div>`:''}

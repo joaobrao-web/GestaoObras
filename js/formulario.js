@@ -4,6 +4,8 @@
 function abrir(t, id, padrao={}){
   const T = TABELAS[t], r = id ? buscar(t,id) : {tipo:'Despesa', data:hoje(), status:'Em andamento', pago:'Pago', ...(T.novo?T.novo():{}), ...padrao};
   ITENS_EDIT = JSON.parse(JSON.stringify(r.itens || [{desc:'',un:'',qtd:1,valor:''}]));
+  const rid = id || novoId();                 // registro novo já ganha código, para poder anexar antes de salvar
+  FORM_ANEXOS = {t, id:rid, novo:!id, lista:[], salvo:false};
   const campo = c => {
     if (c.calc) return '';
     if (c.tipo==='itens') return `<div class="full"><label>${c.l}</label><div id="itens"></div></div>`;
@@ -21,7 +23,8 @@ function abrir(t, id, padrao={}){
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()">
     <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()">
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
-      <div class="grid">${T.campos.map(campo).join('')}</div>
+      <div class="grid">${T.campos.map(campo).join('')}
+        <div class="full"><label>📎 Documentos anexados</label><div class="anx-box" data-anx="${t}:${rid}">${htmlAnexos(t, rid)}</div></div></div>
       <div class="actions">
         <div>${id?`<button type="button" class="btn del" onclick="excluir('${t}','${id}')">🗑 Excluir</button>`:''}
           ${t==='agenda'?`<button type="button" class="btn sec" onclick="abrirGoogle(this.form)" title="Abre o Google Agenda já preenchido, para receber lembrete no celular">📅 Google Agenda</button>`:''}</div>
@@ -58,7 +61,12 @@ function somarItens(){
   const d = Number((document.querySelector('.modal [name=desconto]')||{}).value)||0;
   const t = document.getElementById('totItens'); if (t) t.textContent = 'Total: '+brl(totalItens(ITENS_EDIT)-d);
 }
-function fechar(){ document.getElementById('modal').innerHTML=''; }
+function fechar(){
+  /* cadastro novo cancelado: apaga os arquivos que já tinham sido anexados */
+  if (FORM_ANEXOS && FORM_ANEXOS.novo && !FORM_ANEXOS.salvo && !buscar(FORM_ANEXOS.t, FORM_ANEXOS.id)) FORM_ANEXOS.lista.forEach(apagarArquivo);
+  FORM_ANEXOS = null;
+  document.getElementById('modal').innerHTML='';
+}
 function gravar(t, id, form){
   const T = TABELAS[t], dados = {};
   for (const c of T.campos){
@@ -71,11 +79,17 @@ function gravar(t, id, form){
   }
   if (t==='propostas') dados.total = totalItens(dados.itens) - (Number(dados.desconto)||0);
   if (id) Object.assign(buscar(t,id), dados);
-  else DB[t].push({id:novoId(), criado:hoje(), ...dados});
+  else {
+    const F = FORM_ANEXOS && FORM_ANEXOS.t===t ? FORM_ANEXOS : null;
+    DB[t].push({id:(F && F.id) || novoId(), criado:hoje(), ...dados, ...(F && F.lista.length ? {anexos:F.lista} : {})});
+    if (F) F.salvo = true;
+  }
   salvar(); fechar(); render();
 }
 function excluir(t, id){
-  if (!confirm('Tem certeza que deseja excluir? Isso não pode ser desfeito.')) return;
+  const r = buscar(t, id), n = ((r && r.anexos) || []).length;
+  if (!confirm('Tem certeza que deseja excluir?' + (n ? ` Os ${n} documento(s) anexado(s) também serão apagados.` : '') + ' Isso não pode ser desfeito.')) return;
+  ((r && r.anexos) || []).forEach(apagarArquivo);
   DB[t] = DB[t].filter(r => r.id !== id);
   salvar(); fechar();
   if (tela === 'obra:'+id) tela = 'obras';
