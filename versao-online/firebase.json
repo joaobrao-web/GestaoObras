@@ -1,7 +1,10 @@
 {
   "hosting": {
     "public": ".",
-    "ignore": ["firebase.json", "firestore.rules", "COMO-PUBLICAR.md", "**/.*", "_backup/**", "backup-obras-*.json", "**/node_modules/**"]
+    "ignore": ["firebase.json", "firestore.rules", "COMO-PUBLICAR.md", "**/.*", "_backup/**", "backup-obras-*.json", "**/node_modules/**"],
+    "headers": [
+      { "source": "**", "headers": [ { "key": "Cache-Control", "value": "no-cache" } ] }
+    ]
   },
   "firestore": { "rules": "firestore.rules" }
 }
