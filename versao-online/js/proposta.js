@@ -5,7 +5,7 @@ function verProposta(id){
   const p = buscar('propostas', id);
   if (!p) { tela='propostas'; return lista('propostas'); }
   const cli = buscar('clientes', p.cliente) || {}, obra = buscar('obras', p.obra);
-  const logo = (document.querySelector('.brand img')||{}).src || '';
+  const logo = 'assets/logo-sb-tech-wall.png';   // logo original: a proposta é uma folha branca
   const itens = p.itens || [], bruto = totalItens(itens), desc = Number(p.desconto)||0;
   const sec = (tit, txt) => txt ? `<div class="doc-sec"><h4>${tit}</h4><p style="white-space:pre-wrap">${esc(txt)}</p></div>` : '';
   return `<div class="top noprint"><h2>Proposta Nº ${esc(p.numero)} ${etiqueta(p.status||'')}</h2>
