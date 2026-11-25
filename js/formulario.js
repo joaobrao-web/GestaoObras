@@ -17,11 +17,13 @@ function abrir(t, id, padrao={}){
     else if (c.tipo==='data') inp = `<input type="date" name="${c.k}" value="${esc(v)}">`;
     else if (c.tipo==='dinheiro') inp = `<input type="number" step="0.01" min="0" name="${c.k}" value="${esc(v)}" placeholder="0,00">`;
     else if (c.tipo==='hora') inp = `<input type="time" name="${c.k}" value="${esc(v)}">`;
+    else if (c.tipo==='pessoa') inp = `<input name="${c.k}" value="${esc(v)}" list="lista-pessoas" autocomplete="off" placeholder="Digite ou escolha um nome cadastrado">${listaPessoas()}`;
     else inp = `<input name="${c.k}" value="${esc(v)}">`;
-    return `<div class="${c.full?'full':''}"><label>${c.l}${c.obrig?' *':''}</label>${inp}</div>`;
+    const rot = c.lt && c.lt[r.tipo] || c.l;
+    return `<div class="${c.full?'full':''}"><label data-k="${c.k}">${rot}${c.obrig?' *':''}</label>${inp}</div>`;
   };
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()">
-    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="if(event.target.name==='obra')clienteDaObra(this)">
+    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="if(event.target.name==='obra')clienteDaObra(this);if(event.target.name==='tipo')trocarRotulos('${t}',this)">
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
       <div class="grid">${T.campos.map(campo).join('')}
         <div class="full"><label>📎 Documentos anexados</label><div class="anx-box" data-anx="${t}:${rid}">${htmlAnexos(t, rid)}</div></div></div>
@@ -60,6 +62,20 @@ function somarItens(){
   ITENS_EDIT.forEach((it,i)=>{ const c=document.getElementById('sub'+i); if(c) c.textContent=brl(subItem(it)); });
   const d = Number((document.querySelector('.modal [name=desconto]')||{}).value)||0;
   const t = document.getElementById('totItens'); if (t) t.textContent = 'Total: '+brl(totalItens(ITENS_EDIT)-d);
+}
+/* sugestões de nomes: clientes, fornecedores, prestadores e funcionários já cadastrados */
+function listaPessoas(){
+  const nomes = new Set();
+  ['clientes','fornecedores','prestadores','funcionarios'].forEach(t => DB[t].forEach(x => x.nome && nomes.add(x.nome.trim())));
+  DB.financeiro.forEach(f => f.favorecido && nomes.add(f.favorecido.trim()));
+  return `<datalist id="lista-pessoas">${[...nomes].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}">`).join('')}</datalist>`;
+}
+/* campos cujo título muda conforme o tipo (ex.: Recebido de / Pago a) */
+function trocarRotulos(t, form){
+  const tp = form.elements.tipo.value;
+  TABELAS[t].campos.filter(c => c.lt).forEach(c => {
+    const l = form.querySelector(`label[data-k="${c.k}"]`); if (l) l.textContent = (c.lt[tp] || c.l) + (c.obrig ? ' *' : '');
+  });
 }
 /* ao escolher a obra, preenche o cliente dela (se o campo cliente estiver vazio) */
 function clienteDaObra(form){

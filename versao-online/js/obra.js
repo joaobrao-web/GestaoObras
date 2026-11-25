@@ -40,8 +40,8 @@ function detalheObra(id){
     ${Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<tr><td>${esc(c)}</td><td style="width:50%"><div class="bar"><i style="width:${v/r.desp*100}%"></i></div></td><td class="num">${brl(v)}</td></tr>`).join('')}
   </table></div></div>`:''}
   <div class="box"><h3>Lançamentos da obra</h3>
-    ${lanc.length?`<div class="tablewrap"><table><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Categoria</th><th>Situação</th><th class="num">Valor</th></tr>
-    ${lanc.map(f=>`<tr class="click" onclick="abrir('financeiro','${f.id}')"><td>${dataBR(f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(f.descricao)}</td><td>${esc(f.categoria)}</td><td>${etiqueta(f.pago||'')}</td><td class="num">${brl(f.valor)}</td></tr>`).join('')}
+    ${lanc.length?`<div class="tablewrap"><table><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>De / Para</th><th>Categoria</th><th>Situação</th><th class="num">Valor</th></tr>
+    ${lanc.map(f=>`<tr class="click" onclick="abrir('financeiro','${f.id}')"><td>${dataBR(f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(f.descricao)}</td><td>${esc(f.favorecido)}</td><td>${esc(f.categoria)}</td><td>${etiqueta(f.pago||'')}</td><td class="num">${brl(f.valor)}</td></tr>`).join('')}
     </table></div>`:`<div class="empty">Nenhum lançamento ainda.</div>`}
   </div>
   <div class="box"><h3>Agenda desta obra — próximos compromissos</h3>${tabelaCompromissos(proximos(e => e.obra===id, 50), 'Nenhum compromisso agendado para esta obra.')}</div>

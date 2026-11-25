@@ -88,6 +88,8 @@ const TABELAS = {
     {k:'tipo', l:'Tipo', tipo:'select', opcoes:['Despesa','Receita'], obrig:true},
     {k:'data', l:'Data', tipo:'data', obrig:true},
     {k:'descricao', l:'Descrição', obrig:true, full:true},
+    {k:'favorecido', l:'Recebido de / Pago a', lc:'De / Para', tipo:'pessoa', full:true,
+      lt:{Receita:'Recebido de (quem nos pagou)', Despesa:'Pago a (para quem enviamos)'}},
     {k:'obra', l:'Obra', tipo:'ref', ref:'obras'},
     {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},
     {k:'categoria', l:'Categoria', tipo:'select', opcoes:CATEGORIAS},
@@ -96,7 +98,7 @@ const TABELAS = {
     {k:'fornecedor', l:'Fornecedor', tipo:'ref', ref:'fornecedores'},
     {k:'prestador', l:'Prestador de serviço', tipo:'ref', ref:'prestadores'},
     {k:'obs', l:'Observações', tipo:'texto', full:true},
-  ], colunas:['data','tipo','descricao','obra','cliente','categoria','pago','valor']},
+  ], colunas:['data','tipo','descricao','favorecido','obra','cliente','categoria','pago','valor']},
 
   clientes: { titulo:'Clientes', icone:'👤', singular:'cliente', campos:[
     {k:'nome', l:'Nome', obrig:true, full:true},

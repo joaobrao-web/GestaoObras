@@ -50,7 +50,7 @@ function lista(t){
     </div></div>
   ${totais}
   <div class="tablewrap">${rows.length ? `<table>
-    <tr>${cols.map(c=>`<th class="${c.tipo==='dinheiro'?'num':''}">${c.l.replace(' (R$)','')}</th>`).join('')}</tr>
+    <tr>${cols.map(c=>`<th class="${c.tipo==='dinheiro'?'num':''}">${c.lc || c.l.replace(' (R$)','')}</th>`).join('')}</tr>
     ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map((c,i)=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c, t==='financeiro' && c.k==='cliente' ? clienteLanc(r) : r[c.k])}${i===iClip && (r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>`).join('')}</tr>`).join('')}
   </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.cliente||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`;
 }

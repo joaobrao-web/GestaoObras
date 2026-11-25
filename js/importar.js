@@ -4,7 +4,7 @@
 const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
 const APELIDOS = { descricao:['historico','discriminacao','item'], data:['dt','datadolancamento','vencimento','datapagamento'],
   pago:['situacao','pago','statuspagamento'], obs:['observacao','observacoes','obs'], valor:['valorr','quantia','montante','total'],
-  tipo:['tipo','entradasaida','natureza'], telefone:['telefone','celular','whatsapp','fone'], documento:['cpf','cnpj','cpfcnpj'] };
+  tipo:['tipo','entradasaida','natureza'], favorecido:['de','para','depara','recebidode','pagoa','favorecido','beneficiario','pagador','destinatario','origem','destino'], telefone:['telefone','celular','whatsapp','fone'], documento:['cpf','cnpj','cpfcnpj'] };
 const camposImport = t => TABELAS[t].campos.filter(c => c.tipo!=='itens' && !c.calc);
 let IMPORT = null;
 
@@ -29,7 +29,7 @@ function abrirImportar(t){
 
 function baixarModelo(t){
   const cs = camposImport(t);
-  const ex = {financeiro:{tipo:'Despesa',data:dataBR(hoje()),descricao:'Compra de placas de drywall',obra:(DB.obras[0]||{}).nome||'Nome da obra',cliente:'',categoria:'Material',valor:'1250,00',pago:'Pago',fornecedor:'',prestador:'',obs:''}}[t] || {};
+  const ex = {financeiro:{tipo:'Despesa',data:dataBR(hoje()),descricao:'Compra de placas de drywall',favorecido:'Casa do Drywall',obra:(DB.obras[0]||{}).nome||'Nome da obra',cliente:'',categoria:'Material',valor:'1250,00',pago:'Pago',fornecedor:'',prestador:'',obs:''}}[t] || {};
   const linhas = [cs.map(c=>c.l), cs.map(c=>ex[c.k]||'')];
   baixar(`modelo-${t}.csv`, '﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 }
