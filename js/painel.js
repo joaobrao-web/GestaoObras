@@ -11,8 +11,8 @@ function painel(){
   const fin = DB.financeiro;
   const soma = (fn) => fin.filter(fn).reduce((s,f)=>s+Number(f.valor||0),0);
   const mes = hoje().slice(0,7);
-  const recMes = soma(f => f.tipo==='Receita' && (f.data||'').startsWith(mes));
-  const despMes = soma(f => f.tipo==='Despesa' && (f.data||'').startsWith(mes));
+  const recMes = soma(f => f.tipo==='Receita' && dataLanc(f).startsWith(mes));
+  const despMes = soma(f => f.tipo==='Despesa' && dataLanc(f).startsWith(mes));
   const aPagar = soma(f => f.tipo==='Despesa' && f.pago!=='Pago');
   const aReceber = soma(f => f.tipo==='Receita' && f.pago!=='Pago');
   const saldoGeral = soma(f=>f.tipo==='Receita' && f.pago==='Pago') - soma(f=>f.tipo==='Despesa' && f.pago==='Pago');
@@ -30,10 +30,9 @@ function painel(){
       <td class="num">${brl(r.desp)}</td><td class="num ${r.saldo>=0?'pos':'neg'}">${brl(r.saldo)}</td></tr>`;
   }).join('');
 
-  const pendentes = fin.filter(f => f.pago!=='Pago').sort((a,b)=>(a.data||'').localeCompare(b.data||'')).slice(0,8);
+  const pendentes = fin.filter(f => f.pago!=='Pago').sort((a,b)=>(a.vencimento||a.data||'').localeCompare(b.vencimento||b.data||'')).slice(0,8);
   const linhasPend = pendentes.map(f => `<tr class="click" onclick="abrir('financeiro','${f.id}')">
-      <td>${dataBR(f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(f.descricao)}</td>
-      <td>${mostrar({tipo:'ref',ref:'obras'},f.obra)}</td><td class="num">${brl(f.valor)}</td></tr>`).join('');
+      <td>${dataBR(f.vencimento||f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(nomeLanc(f))}</td><td>${esc(f.descricao)}</td><td class="num">${brl(f.valor)}</td></tr>`).join('');
 
   return `<div class="top"><h2>Painel</h2>
     <div class="tools"><button class="btn sec" onclick="abrir('financeiro')">+ Lançamento</button>
@@ -54,7 +53,7 @@ function painel(){
       : `<div class="empty">Nenhuma obra ativa. Clique em <b>+ Nova obra</b> para começar.</div>`}
   </div>
   <div class="box"><h3>Contas pendentes (a pagar / a receber)</h3>
-    ${pendentes.length ? `<div class="tablewrap"><table><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Obra</th><th class="num">Valor</th></tr>${linhasPend}</table></div>`
+    ${pendentes.length ? `<div class="tablewrap"><table><tr><th>Vencimento</th><th>Tipo</th><th>Beneficiário / Pagador</th><th>Descrição</th><th class="num">Valor</th></tr>${linhasPend}</table></div>`
       : `<div class="empty">Nenhuma conta pendente. 👍</div>`}
   </div>`;
 }
@@ -81,7 +80,7 @@ function graficoMeses(){
   const d = new Date(), meses = [];
   for (let i=5; i>=0; i--){ const x = new Date(d.getFullYear(), d.getMonth()-i, 1);
     meses.push({chave:`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`, nome:MESES_ABREV[x.getMonth()]}); }
-  const soma = (tipo, m) => DB.financeiro.filter(f => f.tipo===tipo && (f.data||'').startsWith(m)).reduce((s,f)=>s+Number(f.valor||0),0);
+  const soma = (tipo, m) => DB.financeiro.filter(f => f.tipo===tipo && dataLanc(f).startsWith(m)).reduce((s,f)=>s+Number(f.valor||0),0);
   meses.forEach(m => { m.rec = soma('Receita', m.chave); m.desp = soma('Despesa', m.chave); });
   const max = Math.max(1, ...meses.map(m => Math.max(m.rec, m.desp)));
   const W=600, H=230, esq=56, base=200, alt=180, passo=(W-esq-10)/6, lb=Math.min(22, passo/3.2);
@@ -125,7 +124,7 @@ function indicadores(){
 /* rosca: despesas por categoria no ano */
 function roscaCategorias(){
   const ano = String(new Date().getFullYear()), cat = {};
-  DB.financeiro.filter(f => f.tipo==='Despesa' && (f.data||'').startsWith(ano))
+  DB.financeiro.filter(f => f.tipo==='Despesa' && dataLanc(f).startsWith(ano))
     .forEach(f => cat[f.categoria||'Outros'] = (cat[f.categoria||'Outros']||0) + Number(f.valor||0));
   let itens = Object.entries(cat).sort((a,b)=>b[1]-a[1]);
   if (itens.length > 5) itens = [...itens.slice(0,5), ['Demais', itens.slice(5).reduce((s,x)=>s+x[1],0)]];

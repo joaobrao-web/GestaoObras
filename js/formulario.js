@@ -9,21 +9,21 @@ function abrir(t, id, padrao={}){
   const campo = c => {
     if (c.calc) return '';
     if (c.tipo==='itens') return `<div class="full"><label>${c.l}</label><div id="itens"></div></div>`;
-    const v = r[c.k] ?? '';
+    const v = (c.padrao && !r[c.k] ? c.padrao(r) : r[c.k]) ?? '';
     let inp;
-    if (c.tipo==='select') inp = `<select name="${c.k}">${c.obrig?'':'<option value=""></option>'}${c.opcoes.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>`;
+    if (c.tipo==='select') inp = `<select name="${c.k}">${c.obrig?'':'<option value=""></option>'}${v && !c.opcoes.includes(v) ? `<option selected>${esc(v)}</option>` : ''}${c.opcoes.map(o=>`<option ${v===o?'selected':''}>${o}</option>`).join('')}</select>`;
     else if (c.tipo==='ref') inp = `<select name="${c.k}"><option value="">— nenhum —</option>${DB[c.ref].slice().sort((a,b)=>(a.nome||'').localeCompare(b.nome||'')).map(o=>`<option value="${o.id}" ${v===o.id?'selected':''}>${esc(o.nome)}</option>`).join('')}</select>`;
     else if (c.tipo==='texto') inp = `<textarea name="${c.k}">${esc(v)}</textarea>`;
     else if (c.tipo==='data') inp = `<input type="date" name="${c.k}" value="${esc(v)}">`;
     else if (c.tipo==='dinheiro') inp = `<input type="number" step="0.01" min="0" name="${c.k}" value="${esc(v)}" placeholder="0,00">`;
     else if (c.tipo==='hora') inp = `<input type="time" name="${c.k}" value="${esc(v)}">`;
-    else if (c.tipo==='pessoa') inp = `<input name="${c.k}" value="${esc(v)}" list="lista-pessoas" autocomplete="off" placeholder="Digite ou escolha um nome cadastrado">${listaPessoas()}`;
+    else if (c.tipo==='pessoa') inp = `<input name="${c.k}" value="${esc(v)}" list="lista-pessoas" autocomplete="off" placeholder="Digite ou escolha um nome cadastrado"><datalist id="lista-pessoas">${opcoesPessoas(r.categoria)}</datalist>`;
     else inp = `<input name="${c.k}" value="${esc(v)}">`;
     const rot = c.lt && c.lt[r.tipo] || c.l;
     return `<div class="${c.full?'full':''}"><label data-k="${c.k}">${rot}${c.obrig?' *':''}</label>${inp}</div>`;
   };
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()">
-    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="if(event.target.name==='obra')clienteDaObra(this);if(event.target.name==='tipo')trocarRotulos('${t}',this)">
+    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="mudouCampo('${t}',this,event.target.name)">
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
       <div class="grid">${T.campos.map(campo).join('')}
         <div class="full"><label>📎 Documentos anexados</label><div class="anx-box" data-anx="${t}:${rid}">${htmlAnexos(t, rid)}</div></div></div>
@@ -63,12 +63,25 @@ function somarItens(){
   const d = Number((document.querySelector('.modal [name=desconto]')||{}).value)||0;
   const t = document.getElementById('totItens'); if (t) t.textContent = 'Total: '+brl(totalItens(ITENS_EDIT)-d);
 }
-/* sugestões de nomes: clientes, fornecedores, prestadores e funcionários já cadastrados */
-function listaPessoas(){
-  const nomes = new Set();
-  ['clientes','fornecedores','prestadores','funcionarios'].forEach(t => DB[t].forEach(x => x.nome && nomes.add(x.nome.trim())));
-  DB.financeiro.forEach(f => f.favorecido && nomes.add(f.favorecido.trim()));
-  return `<datalist id="lista-pessoas">${[...nomes].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}">`).join('')}</datalist>`;
+function mudouCampo(t, form, k){
+  if (k==='obra') clienteDaObra(form);
+  if (k==='tipo') trocarRotulos(t, form);
+  if (k==='categoria' && form.elements.favorecido){ const d = form.querySelector('#lista-pessoas'); if (d) d.innerHTML = opcoesPessoas(form.elements.categoria.value); }
+  if (k==='favorecido') categoriaDoNome(form);
+}
+/* sugestões de nomes: os cadastrados na categoria escolhida (ou em todas, se não houver categoria) */
+function opcoesPessoas(cat){
+  const tabs = CAT_TABELA[cat] ? [CAT_TABELA[cat]] : Object.values(CAT_TABELA), nomes = new Set();
+  tabs.forEach(t => DB[t].forEach(x => x.nome && nomes.add(x.nome.trim())));
+  if (!CAT_TABELA[cat]) DB.financeiro.forEach(f => f.favorecido && nomes.add(f.favorecido.trim()));
+  return [...nomes].sort((a,b)=>a.localeCompare(b)).map(n=>`<option value="${esc(n)}">`).join('');
+}
+/* nome digitado é de alguém cadastrado e a categoria está vazia: preenche a categoria */
+function categoriaDoNome(form){
+  const c = form.elements.categoria, n = form.elements.favorecido.value.trim().toLowerCase();
+  if (!c || c.value || !n) return;
+  const cat = Object.keys(CAT_TABELA).find(k => DB[CAT_TABELA[k]].some(x => (x.nome||'').trim().toLowerCase() === n));
+  if (cat){ c.value = cat; mudouCampo('financeiro', form, 'categoria'); }
 }
 /* campos cujo título muda conforme o tipo (ex.: Recebido de / Pago a) */
 function trocarRotulos(t, form){
@@ -98,6 +111,7 @@ function gravar(t, id, form){
     if (c.obrig && v===''){ alert('Preencha o campo: '+c.l); form.elements[c.k].focus(); return; }
     dados[c.k] = v;
   }
+  if (t==='financeiro' && !dados.data && !dados.vencimento){ alert('Preencha a data do pagamento ou o vencimento.'); form.elements.data.focus(); return; }
   if (t==='propostas') dados.total = totalItens(dados.itens) - (Number(dados.desconto)||0);
   if (id) Object.assign(buscar(t,id), dados);
   else {

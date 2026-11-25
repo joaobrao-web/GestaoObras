@@ -19,3 +19,10 @@ function etiqueta(v){
   const cor = {'Rascunho':'c','Enviada':'','Aprovada':'g','Recusada':'r','Em andamento':'y','Concluída':'g','Pausada':'r','Orçamento':'','Receita':'g','Despesa':'r','Pago':'c','A pagar / A receber':'y','Em elaboração':'c','Aguardando assinatura':'y','Em vigor':'g','Encerrado':'c','Cancelado':'r','Agendado':'','Concluído':'g'}[v];
   return cor === undefined ? esc(v) : `<span class="tag ${cor}">${esc(v)}</span>`;
 }
+
+/* ---------- lançamentos do financeiro ---------- */
+/* data que conta para os relatórios: a do pagamento; se ainda não foi pago, o vencimento */
+const dataLanc = f => f.data || f.vencimento || '';
+/* nome do beneficiário/pagador; lançamentos antigos usavam fornecedor, prestador ou cliente cadastrado */
+const nomeLanc = f => f.favorecido || ['fornecedor:fornecedores','prestador:prestadores','cliente:clientes']
+  .map(x => x.split(':')).map(([k,t]) => f[k] && (buscar(t, f[k]) || {}).nome).find(Boolean) || '';

@@ -4,7 +4,8 @@
 const STATUS_OBRA = ['Orçamento','Em andamento','Pausada','Concluída'];
 const STATUS_PROPOSTA = ['Rascunho','Enviada','Aprovada','Recusada'];
 const STATUS_CONTRATO = ['Em elaboração','Aguardando assinatura','Em vigor','Encerrado','Cancelado'];
-const CATEGORIAS  = ['Material','Mão de obra','Prestador de serviço','Equipamento','Transporte','Impostos','Administrativo','Recebimento de cliente','Outros'];
+const CATEGORIAS  = ['Fornecedor','Cliente','Prestador de serviço','Funcionário'];
+const CAT_TABELA  = {'Fornecedor':'fornecedores','Cliente':'clientes','Prestador de serviço':'prestadores','Funcionário':'funcionarios'};   // de onde vêm as sugestões de nome
 const STATUS_AGENDA = ['Agendado','Concluído','Cancelado'];
 /* tipos de compromisso e a cor de cada um no calendário */
 const TIPOS_AGENDA = {'Visita técnica':'#22d3ee','Medição':'#a78bfa','Entrega de material':'#fbbf24','Reunião':'#3b82f6',
@@ -85,20 +86,18 @@ const TABELAS = {
   }},
 
   financeiro: { titulo:'Financeiro', icone:'💰', singular:'lançamento', campos:[
+    {k:'data', l:'Data do pagamento', lc:'Pagamento', tipo:'data'},
+    {k:'vencimento', l:'Vencimento', tipo:'data'},
     {k:'tipo', l:'Tipo', tipo:'select', opcoes:['Despesa','Receita'], obrig:true},
-    {k:'data', l:'Data', tipo:'data', obrig:true},
+    {k:'favorecido', l:'Nome do beneficiário ou pagador', lc:'Beneficiário / Pagador', tipo:'pessoa', full:true, padrao: r => nomeLanc(r),
+      lt:{Despesa:'Nome do beneficiário (para quem pagamos)', Receita:'Nome do pagador (quem nos pagou)'}},
     {k:'descricao', l:'Descrição', obrig:true, full:true},
-    {k:'favorecido', l:'Recebido de / Pago a', lc:'De / Para', tipo:'pessoa', full:true,
-      lt:{Receita:'Recebido de (quem nos pagou)', Despesa:'Pago a (para quem enviamos)'}},
-    {k:'obra', l:'Obra', tipo:'ref', ref:'obras'},
-    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},
     {k:'categoria', l:'Categoria', tipo:'select', opcoes:CATEGORIAS},
-    {k:'valor', l:'Valor (R$)', tipo:'dinheiro', obrig:true},
     {k:'pago', l:'Situação', tipo:'select', opcoes:['Pago','A pagar / A receber']},
-    {k:'fornecedor', l:'Fornecedor', tipo:'ref', ref:'fornecedores'},
-    {k:'prestador', l:'Prestador de serviço', tipo:'ref', ref:'prestadores'},
+    {k:'valor', l:'Valor (R$)', tipo:'dinheiro', obrig:true},
+    {k:'obra', l:'Obra (opcional)', tipo:'ref', ref:'obras'},
     {k:'obs', l:'Observações', tipo:'texto', full:true},
-  ], colunas:['data','tipo','descricao','favorecido','obra','cliente','categoria','pago','valor']},
+  ], colunas:['data','vencimento','tipo','favorecido','descricao','categoria','pago','valor']},
 
   clientes: { titulo:'Clientes', icone:'👤', singular:'cliente', campos:[
     {k:'nome', l:'Nome', obrig:true, full:true},

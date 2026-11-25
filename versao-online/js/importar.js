@@ -2,9 +2,9 @@
    IMPORTAR PLANILHA (Excel .xlsx ou .csv)
    ===================================================================== */
 const norm = s => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
-const APELIDOS = { descricao:['historico','discriminacao','item'], data:['dt','datadolancamento','vencimento','datapagamento'],
+const APELIDOS = { descricao:['historico','discriminacao','item'], data:['dt','datadolancamento','datapagamento','pagamento','datadopagamento'], vencimento:['venc','datadevencimento','dtvencimento'],
   pago:['situacao','pago','statuspagamento'], obs:['observacao','observacoes','obs'], valor:['valorr','quantia','montante','total'],
-  tipo:['tipo','entradasaida','natureza'], favorecido:['de','para','depara','recebidode','pagoa','favorecido','beneficiario','pagador','destinatario','origem','destino'], telefone:['telefone','celular','whatsapp','fone'], documento:['cpf','cnpj','cpfcnpj'] };
+  tipo:['tipo','entradasaida','natureza'], favorecido:['nome','de','para','depara','recebidode','pagoa','favorecido','beneficiario','pagador','beneficiariopagador','beneficiariooupagador','destinatario','origem','destino'], telefone:['telefone','celular','whatsapp','fone'], documento:['cpf','cnpj','cpfcnpj'] };
 const camposImport = t => TABELAS[t].campos.filter(c => c.tipo!=='itens' && !c.calc);
 let IMPORT = null;
 
@@ -29,7 +29,7 @@ function abrirImportar(t){
 
 function baixarModelo(t){
   const cs = camposImport(t);
-  const ex = {financeiro:{tipo:'Despesa',data:dataBR(hoje()),descricao:'Compra de placas de drywall',favorecido:'Casa do Drywall',obra:(DB.obras[0]||{}).nome||'Nome da obra',cliente:'',categoria:'Material',valor:'1250,00',pago:'Pago',fornecedor:'',prestador:'',obs:''}}[t] || {};
+  const ex = {financeiro:{data:dataBR(hoje()),vencimento:dataBR(hoje()),tipo:'Despesa',favorecido:'Casa do Drywall',descricao:'Compra de placas de drywall',categoria:'Fornecedor',pago:'Pago',valor:'1250,00',obra:(DB.obras[0]||{}).nome||'',obs:''}}[t] || {};
   const linhas = [cs.map(c=>c.l), cs.map(c=>ex[c.k]||'')];
   baixar(`modelo-${t}.csv`, '﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 }
@@ -142,8 +142,9 @@ function prepararImport(t, linhas){
     }
     if (t==='financeiro'){
       if (typeof r.valor==='number' && r.valor<0){ if (!r.tipo) r.tipo='Despesa'; r.valor = Math.abs(r.valor); }
-      if (!r.tipo) r.tipo = r.categoria==='Recebimento de cliente' ? 'Receita' : 'Despesa';
+      if (!r.tipo) r.tipo = r.categoria==='Cliente' ? 'Receita' : 'Despesa';
       if (!r.pago) r.pago = 'Pago';
+      if (!r.data && !r.vencimento) erros.push('falta data do pagamento ou vencimento');
     }
     for (const c of TABELAS[t].campos) if (c.obrig && (r[c.k]===undefined || r[c.k]==='')) erros.push(`falta ${c.l.replace(' (R$)','').toLowerCase()}`);
     return {r, erros, avisos, repetido: existentes.has(chave(r)), linha: n+2};

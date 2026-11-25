@@ -6,10 +6,10 @@ function detalheObra(id){
   if (!o) { tela='obras'; return lista('obras'); }
   const r = resumoObra(id);
   const cli = buscar('clientes', o.cliente);
-  const lanc = DB.financeiro.filter(f=>f.obra===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
+  const lanc = DB.financeiro.filter(f=>f.obra===id).sort((a,b)=>dataLanc(b).localeCompare(dataLanc(a)));
   const equipe = DB.funcionarios.filter(f=>f.obra===id);
   const prest = DB.prestadores.filter(p=>p.obra===id);
-  const pagoPrest = pid => DB.financeiro.filter(f=>f.obra===id && f.prestador===pid && f.tipo==='Despesa').reduce((s,f)=>s+Number(f.valor||0),0);
+  const pagoPrest = pid => DB.financeiro.filter(f=>f.obra===id && f.tipo==='Despesa' && (f.prestador===pid || (f.categoria==='Prestador de serviço' && norm(f.favorecido)===norm((buscar('prestadores',pid)||{}).nome)))).reduce((s,f)=>s+Number(f.valor||0),0);
   const props = DB.propostas.filter(p=>p.obra===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
   const porCat = {};
   lanc.filter(f=>f.tipo==='Despesa').forEach(f => porCat[f.categoria||'Outros'] = (porCat[f.categoria||'Outros']||0) + Number(f.valor||0));
@@ -20,7 +20,7 @@ function detalheObra(id){
     <button class="btn sec" onclick="abrir('obras','${id}')">✏️ Editar obra</button>
     <button class="btn sec" onclick="abrir('propostas',null,{obra:'${id}',cliente:'${o.cliente||''}',nome:${esc(JSON.stringify(o.nome||''))}})">+ Proposta</button>
     <button class="btn sec" onclick="abrir('agenda',null,{obra:'${id}',cliente:'${o.cliente||''}',local:${esc(JSON.stringify(o.endereco||''))}})">+ Compromisso</button>
-    <button class="btn" onclick="abrir('financeiro',null,{obra:'${id}',cliente:'${o.cliente||''}'})">+ Lançamento</button></div></div>
+    <button class="btn" onclick="abrir('financeiro',null,{obra:'${id}'})">+ Lançamento</button></div></div>
   <div class="cards">
     <div class="card"><div class="lbl">Valor do contrato</div><div class="val">${brl(o.valor)}</div></div>
     <div class="card"><div class="lbl">Recebido</div><div class="val pos">${brl(r.rec)}</div></div>
@@ -40,8 +40,8 @@ function detalheObra(id){
     ${Object.entries(porCat).sort((a,b)=>b[1]-a[1]).map(([c,v])=>`<tr><td>${esc(c)}</td><td style="width:50%"><div class="bar"><i style="width:${v/r.desp*100}%"></i></div></td><td class="num">${brl(v)}</td></tr>`).join('')}
   </table></div></div>`:''}
   <div class="box"><h3>Lançamentos da obra</h3>
-    ${lanc.length?`<div class="tablewrap"><table><tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>De / Para</th><th>Categoria</th><th>Situação</th><th class="num">Valor</th></tr>
-    ${lanc.map(f=>`<tr class="click" onclick="abrir('financeiro','${f.id}')"><td>${dataBR(f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(f.descricao)}</td><td>${esc(f.favorecido)}</td><td>${esc(f.categoria)}</td><td>${etiqueta(f.pago||'')}</td><td class="num">${brl(f.valor)}</td></tr>`).join('')}
+    ${lanc.length?`<div class="tablewrap"><table><tr><th>Pagamento</th><th>Vencimento</th><th>Tipo</th><th>Beneficiário / Pagador</th><th>Descrição</th><th>Categoria</th><th>Situação</th><th class="num">Valor</th></tr>
+    ${lanc.map(f=>`<tr class="click" onclick="abrir('financeiro','${f.id}')"><td>${dataBR(f.data)}</td><td>${dataBR(f.vencimento)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(nomeLanc(f))}</td><td>${esc(f.descricao)}</td><td>${esc(f.categoria)}</td><td>${etiqueta(f.pago||'')}</td><td class="num">${brl(f.valor)}</td></tr>`).join('')}
     </table></div>`:`<div class="empty">Nenhum lançamento ainda.</div>`}
   </div>
   <div class="box"><h3>Agenda desta obra — próximos compromissos</h3>${tabelaCompromissos(proximos(e => e.obra===id, 50), 'Nenhum compromisso agendado para esta obra.')}</div>
