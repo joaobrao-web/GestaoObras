@@ -53,7 +53,10 @@ function lista(t){
     ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map((c,i)=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c, c.padrao && !r[c.k] ? c.padrao(r) : r[c.k])}${i===iClip && (r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>`).join('')}</tr>`).join('')}
   </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.categoria||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`}`;
 }
-/* financeiro em dois quadros: realizados (esquerda) e a pagar / a receber (direita) */
+/* financeiro em dois quadros: realizados (esquerda) e a pagar / a receber (direita).
+   Cada quadro mostra só os primeiros 50; o botão "Mostrar mais" abre os próximos. */
+const FIN_PASSO = 50, FIN_LIMITE = {feitos: FIN_PASSO, pend: FIN_PASSO};
+function maisFin(q, n){ FIN_LIMITE[q] = n; render(); }
 function quadrosFin(rows, filtrado){
   const hj = hoje(), feitos = rows.filter(realizado), pend = rows.filter(r => !realizado(r));
   const soma = (l, tp) => l.filter(r => r.tipo===tp).reduce((s,r)=>s+Number(r.valor||0),0);
@@ -62,10 +65,15 @@ function quadrosFin(rows, filtrado){
       <td><b>${esc(nomeLanc(r)) || '<span class="muted">—</span>'}</b>${r.categoria?`<div class="cat">${esc(r.categoria)}</div>`:''}</td>
       <td>${esc(r.descricao)}${(r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>
       <td class="num ${r.tipo==='Receita'?'pos':'neg'}">${r.tipo==='Receita'?'+':'−'} ${brl(r.valor)}</td></tr>`;
-  const quadro = (cls, titulo, l, colData, resumo, vazio, fn) => `<div class="box fin-q ${cls}">
+  const quadro = (cls, titulo, l, colData, resumo, vazio, fn) => { const lim = FIN_LIMITE[cls], resto = l.length - lim; return `<div class="box fin-q ${cls}">
       <div class="fin-q-top"><h3>${titulo} <span class="qtd">${l.length}</span></h3><div class="fin-q-res">${resumo}</div></div>
       ${l.length ? `<div class="tablewrap"><table><tr><th>${colData}</th><th>Beneficiário / Pagador</th><th>Descrição</th><th class="num">Valor</th></tr>
-        ${l.map(fn).join('')}</table></div>` : `<div class="empty">${vazio}${filtrado?' com esse filtro':''}.</div>`}</div>`;
+        ${l.slice(0, lim).map(fn).join('')}</table></div>
+        <div class="fin-mais">${resto > 0 ? `<span>Mostrando ${lim} de ${l.length}</span>
+          <button class="btn sec" onclick="maisFin('${cls}', ${lim + FIN_PASSO})">▼ Mostrar mais ${Math.min(FIN_PASSO, resto)}</button>
+          ${resto > FIN_PASSO ? `<button class="btn sec" onclick="maisFin('${cls}', ${l.length})">Mostrar todos (${l.length})</button>` : ''}`
+          : lim > FIN_PASSO ? `<button class="btn sec" onclick="maisFin('${cls}', FIN_PASSO)">▲ Mostrar menos</button>` : ''}</div>`
+        : `<div class="empty">${vazio}${filtrado?' com esse filtro':''}.</div>`}</div>`; };
   const atrasados = pend.filter(r => dataLanc(r) < hj);
   return `<div class="fin-duas">
     ${quadro('feitos', '✅ Realizados', feitos, 'Pagamento',

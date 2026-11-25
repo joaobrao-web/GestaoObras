@@ -284,3 +284,5 @@ a.gcal:hover{background:rgba(34,211,238,.1)}
 .muted{color:var(--muted)}
 @media (max-width:1250px){ .fin-duas{grid-template-columns:minmax(0,1fr)} }
 @media print{ .fin-duas{grid-template-columns:1fr} }
+.fin-mais{display:flex;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px;color:var(--muted);font-size:13px}
+.fin-mais:empty{display:none}
