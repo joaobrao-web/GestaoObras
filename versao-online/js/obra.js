@@ -12,7 +12,7 @@ function detalheObra(id){
   const pagoPrest = pid => DB.financeiro.filter(f=>f.obra===id && f.tipo==='Despesa' && (f.prestador===pid || (f.categoria==='Prestador de serviço' && norm(f.favorecido)===norm((buscar('prestadores',pid)||{}).nome)))).reduce((s,f)=>s+Number(f.valor||0),0);
   const props = DB.propostas.filter(p=>p.obra===id).sort((a,b)=>(b.data||'').localeCompare(a.data||''));
   const porCat = {};
-  lanc.filter(f=>f.tipo==='Despesa').forEach(f => porCat[f.categoria||'Outros'] = (porCat[f.categoria||'Outros']||0) + Number(f.valor||0));
+  lanc.filter(f=>f.tipo==='Despesa' && realizado(f)).forEach(f => porCat[f.categoria||'Outros'] = (porCat[f.categoria||'Outros']||0) + Number(f.valor||0));
 
   return `<div class="top"><h2>${esc(o.nome)} ${etiqueta(o.status||'')}</h2>
     <div class="tools"><button class="btn sec" onclick="ir('obras')">← Voltar</button>
@@ -25,7 +25,8 @@ function detalheObra(id){
     <div class="card"><div class="lbl">Valor do contrato</div><div class="val">${brl(o.valor)}</div></div>
     <div class="card"><div class="lbl">Recebido</div><div class="val pos">${brl(r.rec)}</div></div>
     <div class="card"><div class="lbl">Gasto</div><div class="val neg">${brl(r.desp)}</div></div>
-    <div class="card"><div class="lbl">Resultado atual</div><div class="val ${r.saldo>=0?'pos':'neg'}">${brl(r.saldo)}</div></div>
+    <div class="card destaque"><div class="lbl">💵 Resultado real</div><div class="val ${r.saldo>=0?'pos':'neg'}">${brl(r.saldo)}</div><div class="sub">só o que já foi pago / recebido</div></div>
+    <div class="card destaque"><div class="lbl">🔮 Resultado previsto</div><div class="val ${r.previsto>=0?'pos':'neg'}">${brl(r.previsto)}</div><div class="sub">a receber ${brl(r.aRec)} · a pagar ${brl(r.aPag)}</div></div>
     <div class="card"><div class="lbl">Falta receber do contrato</div><div class="val">${brl((Number(o.valor)||0)-r.rec)}</div></div>
   </div>
   <div class="box"><h3>Informações</h3>

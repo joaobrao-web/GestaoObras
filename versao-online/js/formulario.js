@@ -68,6 +68,12 @@ function mudouCampo(t, form, k){
   if (k==='tipo') trocarRotulos(t, form);
   if (k==='categoria' && form.elements.favorecido){ const d = form.querySelector('#lista-pessoas'); if (d) d.innerHTML = opcoesPessoas(form.elements.categoria.value); }
   if (k==='favorecido') categoriaDoNome(form);
+  /* data do pagamento e situação andam juntas: sem data = ainda não realizado */
+  const d = form.elements.data, p = form.elements.pago;
+  if (t==='financeiro' && d && p){
+    if (k==='data') p.value = d.value ? 'Pago' : 'A pagar / A receber';
+    if (k==='pago'){ if (p.value==='Pago'){ if (!d.value) d.value = hoje(); } else d.value = ''; }
+  }
 }
 /* sugestões de nomes: os cadastrados na categoria escolhida (ou em todas, se não houver categoria) */
 function opcoesPessoas(cat){
@@ -112,6 +118,7 @@ function gravar(t, id, form){
     dados[c.k] = v;
   }
   if (t==='financeiro' && !dados.data && !dados.vencimento){ alert('Preencha a data do pagamento ou o vencimento.'); form.elements.data.focus(); return; }
+  if (t==='financeiro' && !dados.data) dados.pago = 'A pagar / A receber';
   if (t==='propostas') dados.total = totalItens(dados.itens) - (Number(dados.desconto)||0);
   if (id) Object.assign(buscar(t,id), dados);
   else {

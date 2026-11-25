@@ -2,20 +2,15 @@
    PAINEL
    ===================================================================== */
 function resumoObra(id){
-  const l = DB.financeiro.filter(f => f.obra === id);
-  const rec = l.filter(f => f.tipo==='Receita').reduce((s,f)=>s+Number(f.valor||0),0);
-  const desp = l.filter(f => f.tipo==='Despesa').reduce((s,f)=>s+Number(f.valor||0),0);
-  return {rec, desp, saldo: rec-desp};
+  return totaisFin(DB.financeiro.filter(f => f.obra === id));   // rec/desp/saldo = real; previsto inclui pendentes
 }
 function painel(){
   const fin = DB.financeiro;
   const soma = (fn) => fin.filter(fn).reduce((s,f)=>s+Number(f.valor||0),0);
   const mes = hoje().slice(0,7);
-  const recMes = soma(f => f.tipo==='Receita' && dataLanc(f).startsWith(mes));
-  const despMes = soma(f => f.tipo==='Despesa' && dataLanc(f).startsWith(mes));
-  const aPagar = soma(f => f.tipo==='Despesa' && f.pago!=='Pago');
-  const aReceber = soma(f => f.tipo==='Receita' && f.pago!=='Pago');
-  const saldoGeral = soma(f=>f.tipo==='Receita' && f.pago==='Pago') - soma(f=>f.tipo==='Despesa' && f.pago==='Pago');
+  const recMes = soma(f => f.tipo==='Receita' && realizado(f) && dataLanc(f).startsWith(mes));
+  const despMes = soma(f => f.tipo==='Despesa' && realizado(f) && dataLanc(f).startsWith(mes));
+  const T = totaisFin(fin);
   const ativas = DB.obras.filter(o => o.status==='Em andamento').length;
   const enviadas = DB.propostas.filter(p => p.status==='Enviada');
   const totEnv = enviadas.reduce((s,p)=>s+Number(p.total||0),0);
@@ -30,7 +25,7 @@ function painel(){
       <td class="num">${brl(r.desp)}</td><td class="num ${r.saldo>=0?'pos':'neg'}">${brl(r.saldo)}</td></tr>`;
   }).join('');
 
-  const pendentes = fin.filter(f => f.pago!=='Pago').sort((a,b)=>(a.vencimento||a.data||'').localeCompare(b.vencimento||b.data||'')).slice(0,8);
+  const pendentes = fin.filter(f => !realizado(f)).sort((a,b)=>(a.vencimento||a.data||'').localeCompare(b.vencimento||b.data||'')).slice(0,8);
   const linhasPend = pendentes.map(f => `<tr class="click" onclick="abrir('financeiro','${f.id}')">
       <td>${dataBR(f.vencimento||f.data)}</td><td>${etiqueta(f.tipo)}</td><td>${esc(nomeLanc(f))}</td><td>${esc(f.descricao)}</td><td class="num">${brl(f.valor)}</td></tr>`).join('');
 
@@ -39,11 +34,12 @@ function painel(){
     <button class="btn gold" onclick="abrir('obras')">+ Nova obra</button></div></div>
   <div class="cards">
     <div class="card"><div class="lbl">Obras em andamento</div><div class="val">${ativas}</div></div>
-    <div class="card"><div class="lbl">Saldo em caixa (pagos)</div><div class="val ${saldoGeral>=0?'pos':'neg'}">${brl(saldoGeral)}</div></div>
+    <div class="card destaque"><div class="lbl">💵 Saldo real</div><div class="val ${T.saldo>=0?'pos':'neg'}">${brl(T.saldo)}</div><div class="sub">só o que já foi pago / recebido</div></div>
+    <div class="card destaque"><div class="lbl">🔮 Saldo previsto</div><div class="val ${T.previsto>=0?'pos':'neg'}">${brl(T.previsto)}</div><div class="sub">incluindo a receber e a pagar</div></div>
     <div class="card"><div class="lbl">Receitas deste mês</div><div class="val pos">${brl(recMes)}</div></div>
     <div class="card"><div class="lbl">Despesas deste mês</div><div class="val neg">${brl(despMes)}</div></div>
-    <div class="card"><div class="lbl">A receber</div><div class="val">${brl(aReceber)}</div></div>
-    <div class="card"><div class="lbl">A pagar</div><div class="val">${brl(aPagar)}</div></div>
+    <div class="card"><div class="lbl">A receber</div><div class="val">${brl(T.aRec)}</div></div>
+    <div class="card"><div class="lbl">A pagar</div><div class="val">${brl(T.aPag)}</div></div>
     <div class="card" style="cursor:pointer" onclick="ir('propostas')"><div class="lbl">Propostas aguardando resposta (${enviadas.length})</div><div class="val">${brl(totEnv)}</div></div>
   </div>
   ${graficosPainel()}
@@ -80,7 +76,7 @@ function graficoMeses(){
   const d = new Date(), meses = [];
   for (let i=5; i>=0; i--){ const x = new Date(d.getFullYear(), d.getMonth()-i, 1);
     meses.push({chave:`${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}`, nome:MESES_ABREV[x.getMonth()]}); }
-  const soma = (tipo, m) => DB.financeiro.filter(f => f.tipo===tipo && dataLanc(f).startsWith(m)).reduce((s,f)=>s+Number(f.valor||0),0);
+  const soma = (tipo, m) => DB.financeiro.filter(f => f.tipo===tipo && realizado(f) && dataLanc(f).startsWith(m)).reduce((s,f)=>s+Number(f.valor||0),0);
   meses.forEach(m => { m.rec = soma('Receita', m.chave); m.desp = soma('Despesa', m.chave); });
   const max = Math.max(1, ...meses.map(m => Math.max(m.rec, m.desp)));
   const W=600, H=230, esq=56, base=200, alt=180, passo=(W-esq-10)/6, lb=Math.min(22, passo/3.2);
@@ -124,7 +120,7 @@ function indicadores(){
 /* rosca: despesas por categoria no ano */
 function roscaCategorias(){
   const ano = String(new Date().getFullYear()), cat = {};
-  DB.financeiro.filter(f => f.tipo==='Despesa' && dataLanc(f).startsWith(ano))
+  DB.financeiro.filter(f => f.tipo==='Despesa' && realizado(f) && dataLanc(f).startsWith(ano))
     .forEach(f => cat[f.categoria||'Outros'] = (cat[f.categoria||'Outros']||0) + Number(f.valor||0));
   let itens = Object.entries(cat).sort((a,b)=>b[1]-a[1]);
   if (itens.length > 5) itens = [...itens.slice(0,5), ['Demais', itens.slice(5).reduce((s,x)=>s+x[1],0)]];

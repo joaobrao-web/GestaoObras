@@ -32,11 +32,8 @@ function lista(t){
 
   let totais = '';
   if (t==='financeiro'){
-    const rec = rows.filter(r=>r.tipo==='Receita').reduce((s,r)=>s+Number(r.valor||0),0);
-    const desp = rows.filter(r=>r.tipo==='Despesa').reduce((s,r)=>s+Number(r.valor||0),0);
-    totais = `<div class="cards"><div class="card"><div class="lbl">Receitas (filtro)</div><div class="val pos">${brl(rec)}</div></div>
-      <div class="card"><div class="lbl">Despesas (filtro)</div><div class="val neg">${brl(desp)}</div></div>
-      <div class="card"><div class="lbl">Saldo (filtro)</div><div class="val ${rec-desp>=0?'pos':'neg'}">${brl(rec-desp)}</div></div></div>`;
+    const filtrado = f.texto||f.obra||f.categoria||f.tipo||f.mes;
+    totais = cardsSaldo(totaisFin(rows), filtrado ? ' (filtro)' : '');
   }
   const clique = t==='obras' ? id=>`ir('obra:${id}')` : t==='propostas' ? id=>`ir('proposta:${id}')` : id=>`abrir('${t}','${id}')`;
 

@@ -26,3 +26,21 @@ const dataLanc = f => f.data || f.vencimento || '';
 /* nome do beneficiário/pagador; lançamentos antigos usavam fornecedor, prestador ou cliente cadastrado */
 const nomeLanc = f => f.favorecido || ['fornecedor:fornecedores','prestador:prestadores','cliente:clientes']
   .map(x => x.split(':')).map(([k,t]) => f[k] && (buscar(t, f[k]) || {}).nome).find(Boolean) || '';
+/* realizado = já foi pago/recebido (tem data do pagamento). Sem data, só vencimento = previsto */
+const realizado = f => !!f.data && f.pago !== 'A pagar / A receber';
+/* totais: real (só realizados) e previsto (realizados + pendentes) */
+function totaisFin(lista){
+  const s = fn => lista.filter(fn).reduce((t,f)=>t+Number(f.valor||0),0);
+  const rec = s(f => f.tipo==='Receita' && realizado(f)), desp = s(f => f.tipo==='Despesa' && realizado(f));
+  const aRec = s(f => f.tipo==='Receita' && !realizado(f)), aPag = s(f => f.tipo==='Despesa' && !realizado(f));
+  return {rec, desp, saldo: rec-desp, aRec, aPag, previsto: rec+aRec-desp-aPag};
+}
+const cardsSaldo = (x, sufixo='') => `<div class="cards">
+    <div class="card"><div class="lbl">Recebido${sufixo}</div><div class="val pos">${brl(x.rec)}</div></div>
+    <div class="card"><div class="lbl">Pago${sufixo}</div><div class="val neg">${brl(x.desp)}</div></div>
+    <div class="card destaque"><div class="lbl">💵 Saldo real${sufixo}</div><div class="val ${x.saldo>=0?'pos':'neg'}">${brl(x.saldo)}</div><div class="sub">só o que já foi pago / recebido</div></div>
+  </div><div class="cards">
+    <div class="card"><div class="lbl">A receber${sufixo}</div><div class="val">${brl(x.aRec)}</div></div>
+    <div class="card"><div class="lbl">A pagar${sufixo}</div><div class="val">${brl(x.aPag)}</div></div>
+    <div class="card destaque"><div class="lbl">🔮 Saldo previsto${sufixo}</div><div class="val ${x.previsto>=0?'pos':'neg'}">${brl(x.previsto)}</div><div class="sub">saldo real + a receber − a pagar</div></div>
+  </div>`;
