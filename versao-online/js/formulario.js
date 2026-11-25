@@ -23,9 +23,10 @@ function abrir(t, id, padrao={}){
     return `<div class="${c.full?'full':''}"><label data-k="${c.k}">${rot}${c.obrig?' *':''}</label>${inp}</div>`;
   };
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()">
-    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="mudouCampo('${t}',this,event.target.name)">
+    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens();if(this.elements.rep_modo)atualizarRepeticao(this)" onchange="mudouCampo('${t}',this,event.target.name);if(this.elements.rep_modo)atualizarRepeticao(this)">
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
       <div class="grid">${T.campos.map(campo).join('')}
+        ${t==='financeiro' && !id ? htmlRepeticao() : ''}
         <div class="full"><label>📎 Documentos anexados</label><div class="anx-box" data-anx="${t}:${rid}">${htmlAnexos(t, rid)}</div></div></div>
       <div class="actions">
         <div>${id?`<button type="button" class="btn del" onclick="excluir('${t}','${id}')">🗑 Excluir</button>`:''}
@@ -34,6 +35,7 @@ function abrir(t, id, padrao={}){
       </div>
     </form></div>`;
   desenharItens();
+  const fm = document.querySelector('#modal form'); if (fm.elements.rep_modo) atualizarRepeticao(fm);
   const first = document.querySelector('.modal input, .modal select'); if (first) first.focus();
 }
 
@@ -123,6 +125,7 @@ function gravar(t, id, form){
   if (id) Object.assign(buscar(t,id), dados);
   else {
     const F = FORM_ANEXOS && FORM_ANEXOS.t===t ? FORM_ANEXOS : null;
+    if (t==='financeiro' && form.elements.rep_modo){ if (!gravarSerie(dados, form, F)) return; if (F) F.salvo = true; salvar(); fechar(); render(); return; }
     DB[t].push({id:(F && F.id) || novoId(), criado:hoje(), ...dados, ...(F && F.lista.length ? {anexos:F.lista} : {})});
     if (F) F.salvo = true;
   }
@@ -131,8 +134,15 @@ function gravar(t, id, form){
 function excluir(t, id){
   const r = buscar(t, id), n = ((r && r.anexos) || []).length;
   if (!confirm('Tem certeza que deseja excluir?' + (n ? ` Os ${n} documento(s) anexado(s) também serão apagados.` : '') + ' Isso não pode ser desfeito.')) return;
-  ((r && r.anexos) || []).forEach(apagarArquivo);
-  DB[t] = DB[t].filter(r => r.id !== id);
+  const serie = t==='financeiro' ? outrosDaSerie(r) : [];
+  const apagar = new Set([id]);
+  if (serie.length && confirm(`Este lançamento faz parte de uma repetição com mais ${serie.length} lançamento(s).
+
+OK = excluir TODOS da repetição
+Cancelar = excluir só este`))
+    serie.forEach(x => apagar.add(x.id));
+  DB[t].filter(x => apagar.has(x.id)).forEach(x => (x.anexos || []).forEach(apagarArquivo));
+  DB[t] = DB[t].filter(r => !apagar.has(r.id));
   salvar(); fechar();
   if (tela === 'obra:'+id) tela = 'obras';
   render();

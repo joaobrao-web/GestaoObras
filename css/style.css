@@ -237,3 +237,14 @@ a.gcal:hover{background:rgba(34,211,238,.1)}
 .card.destaque{border-color:rgba(34,211,238,.35)}
 .card .sub{font-size:11px;color:var(--muted);margin-top:4px}
 .cards + .cards{margin-top:-8px}
+
+/* ---------- lançamentos recorrentes ---------- */
+.rep{background:rgba(34,211,238,.05);border:1px dashed rgba(34,211,238,.3);border-radius:14px;padding:12px 14px}
+.rep-linha{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.rep-linha select{width:auto;flex:1 1 220px}
+.rep-op{display:flex;flex-wrap:wrap;gap:10px;align-items:center;color:var(--muted);font-size:14px}
+.rep-op input[type=date],.rep-op input[type=month]{width:auto}
+.rep label.chk{display:inline-flex;align-items:center;gap:6px;margin:0;font-size:13px;color:var(--ink);cursor:pointer}
+.rep label.chk input{width:auto;margin:0}
+.rep-resumo{margin:10px 0 0;font-size:13px;color:var(--ink)}
+.rep-resumo:empty{display:none}
