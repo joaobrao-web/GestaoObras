@@ -13,7 +13,8 @@ function lista(t){
     if (f.categoria) rows = rows.filter(r => r.categoria === f.categoria);
     if (f.tipo) rows = rows.filter(r => r.tipo === f.tipo);
     if (f.mes)  rows = rows.filter(r => dataLanc(r).startsWith(f.mes));
-    rows.sort((a,b)=>dataLanc(b).localeCompare(dataLanc(a)));
+    /* pendentes (sem pagamento) sempre no topo, vencimento mais próximo primeiro; depois os realizados, mais recentes primeiro */
+    rows.sort((a,b)=> realizado(a)-realizado(b) || (realizado(a) ? dataLanc(b).localeCompare(dataLanc(a)) : dataLanc(a).localeCompare(dataLanc(b))));
   } else if (t==='agenda') rows.sort((a,b)=>((b.data||'')+(b.hora||'')).localeCompare((a.data||'')+(a.hora||'')));
   else if (t==='propostas' || t==='contratos') rows.sort((a,b)=>(b.data||'').localeCompare(a.data||'') || String(b.numero).localeCompare(String(a.numero)));
   else rows.sort((a,b)=>(a.nome||'').localeCompare(b.nome||''));
