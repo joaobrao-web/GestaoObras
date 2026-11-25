@@ -21,7 +21,7 @@ function abrir(t, id, padrao={}){
     return `<div class="${c.full?'full':''}"><label>${c.l}${c.obrig?' *':''}</label>${inp}</div>`;
   };
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()">
-    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()">
+    <form class="modal ${T.campos.some(c=>c.tipo==='itens')?'wide':''}" onsubmit="event.preventDefault();gravar('${t}','${id||''}',this)" oninput="if(event.target.name==='desconto')somarItens()" onchange="if(event.target.name==='obra')clienteDaObra(this)">
       <h3>${id?'Editar':'Novo'} ${T.singular}</h3>
       <div class="grid">${T.campos.map(campo).join('')}
         <div class="full"><label>📎 Documentos anexados</label><div class="anx-box" data-anx="${t}:${rid}">${htmlAnexos(t, rid)}</div></div></div>
@@ -60,6 +60,11 @@ function somarItens(){
   ITENS_EDIT.forEach((it,i)=>{ const c=document.getElementById('sub'+i); if(c) c.textContent=brl(subItem(it)); });
   const d = Number((document.querySelector('.modal [name=desconto]')||{}).value)||0;
   const t = document.getElementById('totItens'); if (t) t.textContent = 'Total: '+brl(totalItens(ITENS_EDIT)-d);
+}
+/* ao escolher a obra, preenche o cliente dela (se o campo cliente estiver vazio) */
+function clienteDaObra(form){
+  const o = buscar('obras', form.elements.obra.value), c = form.elements.cliente;
+  if (o && o.cliente && c && !c.value) c.value = o.cliente;
 }
 function fechar(){
   /* cadastro novo cancelado: apaga os arquivos que já tinham sido anexados */

@@ -89,13 +89,14 @@ const TABELAS = {
     {k:'data', l:'Data', tipo:'data', obrig:true},
     {k:'descricao', l:'Descrição', obrig:true, full:true},
     {k:'obra', l:'Obra', tipo:'ref', ref:'obras'},
+    {k:'cliente', l:'Cliente', tipo:'ref', ref:'clientes'},
     {k:'categoria', l:'Categoria', tipo:'select', opcoes:CATEGORIAS},
     {k:'valor', l:'Valor (R$)', tipo:'dinheiro', obrig:true},
     {k:'pago', l:'Situação', tipo:'select', opcoes:['Pago','A pagar / A receber']},
     {k:'fornecedor', l:'Fornecedor', tipo:'ref', ref:'fornecedores'},
     {k:'prestador', l:'Prestador de serviço', tipo:'ref', ref:'prestadores'},
     {k:'obs', l:'Observações', tipo:'texto', full:true},
-  ], colunas:['data','tipo','descricao','obra','categoria','pago','valor']},
+  ], colunas:['data','tipo','descricao','obra','cliente','categoria','pago','valor']},
 
   clientes: { titulo:'Clientes', icone:'👤', singular:'cliente', campos:[
     {k:'nome', l:'Nome', obrig:true, full:true},

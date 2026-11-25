@@ -11,7 +11,7 @@ let IMPORT = null;
 function abrirImportar(t){
   const T = TABELAS[t];
   const dica = t==='financeiro' ? `<p class="hint">💡 <b>Dicas do financeiro:</b> na coluna <b>Tipo</b>, escreva "Receita" ou "Despesa". Se a planilha não tiver essa coluna, tudo entra como <b>despesa</b> (e valores negativos são convertidos para positivo).
-     Na coluna <b>Situação</b>, aceita "Pago", "Sim", "A pagar", "Pendente". O nome da <b>Obra</b> precisa ser igual ao cadastrado no sistema.</p>` : '';
+     Na coluna <b>Situação</b>, aceita "Pago", "Sim", "A pagar", "Pendente". Os nomes da <b>Obra</b> e do <b>Cliente</b> precisam ser iguais aos cadastrados no sistema.</p>` : '';
   document.getElementById('modal').innerHTML = `<div class="modal-bg" onclick="if(event.target===this)fechar()"><div class="modal wide">
     <h3>⬆ Importar ${T.titulo.toLowerCase()} de uma planilha</h3>
     <ol class="passos">
@@ -29,7 +29,7 @@ function abrirImportar(t){
 
 function baixarModelo(t){
   const cs = camposImport(t);
-  const ex = {financeiro:{tipo:'Despesa',data:dataBR(hoje()),descricao:'Compra de placas de drywall',obra:(DB.obras[0]||{}).nome||'Nome da obra',categoria:'Material',valor:'1250,00',pago:'Pago',fornecedor:'',prestador:'',obs:''}}[t] || {};
+  const ex = {financeiro:{tipo:'Despesa',data:dataBR(hoje()),descricao:'Compra de placas de drywall',obra:(DB.obras[0]||{}).nome||'Nome da obra',cliente:'',categoria:'Material',valor:'1250,00',pago:'Pago',fornecedor:'',prestador:'',obs:''}}[t] || {};
   const linhas = [cs.map(c=>c.l), cs.map(c=>ex[c.k]||'')];
   baixar(`modelo-${t}.csv`, '﻿'+linhas.map(l=>l.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(';')).join('\r\n'), 'text/csv;charset=utf-8');
 }

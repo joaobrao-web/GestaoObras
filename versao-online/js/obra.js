@@ -20,7 +20,7 @@ function detalheObra(id){
     <button class="btn sec" onclick="abrir('obras','${id}')">✏️ Editar obra</button>
     <button class="btn sec" onclick="abrir('propostas',null,{obra:'${id}',cliente:'${o.cliente||''}',nome:${esc(JSON.stringify(o.nome||''))}})">+ Proposta</button>
     <button class="btn sec" onclick="abrir('agenda',null,{obra:'${id}',cliente:'${o.cliente||''}',local:${esc(JSON.stringify(o.endereco||''))}})">+ Compromisso</button>
-    <button class="btn" onclick="abrir('financeiro',null,{obra:'${id}'})">+ Lançamento</button></div></div>
+    <button class="btn" onclick="abrir('financeiro',null,{obra:'${id}',cliente:'${o.cliente||''}'})">+ Lançamento</button></div></div>
   <div class="cards">
     <div class="card"><div class="lbl">Valor do contrato</div><div class="val">${brl(o.valor)}</div></div>
     <div class="card"><div class="lbl">Recebido</div><div class="val pos">${brl(r.rec)}</div></div>
