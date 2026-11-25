@@ -48,10 +48,33 @@ function lista(t){
       <button class="btn" onclick="abrir('${t}')">+ Novo ${T.singular}</button>
     </div></div>
   ${totais}
-  <div class="tablewrap">${rows.length ? `<table>
+  ${t==='financeiro' ? quadrosFin(rows, !!(f.texto||f.obra||f.categoria||f.tipo||f.mes)) : `<div class="tablewrap">${rows.length ? `<table>
     <tr>${cols.map(c=>`<th class="${c.tipo==='dinheiro'?'num':''}">${c.lc || c.l.replace(' (R$)','')}</th>`).join('')}</tr>
     ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map((c,i)=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c, c.padrao && !r[c.k] ? c.padrao(r) : r[c.k])}${i===iClip && (r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>`).join('')}</tr>`).join('')}
-  </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.categoria||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`;
+  </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.categoria||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`}`;
+}
+/* financeiro em dois quadros: realizados (esquerda) e a pagar / a receber (direita) */
+function quadrosFin(rows, filtrado){
+  const hj = hoje(), feitos = rows.filter(realizado), pend = rows.filter(r => !realizado(r));
+  const soma = (l, tp) => l.filter(r => r.tipo===tp).reduce((s,r)=>s+Number(r.valor||0),0);
+  const linha = (r, dt, atras) => `<tr class="click ${atras?'atrasado':''}" onclick="abrir('financeiro','${r.id}')">
+      <td>${dataBR(dt)}${atras?'<div class="atr">atrasado</div>':''}</td>
+      <td><b>${esc(nomeLanc(r)) || '<span class="muted">—</span>'}</b>${r.categoria?`<div class="cat">${esc(r.categoria)}</div>`:''}</td>
+      <td>${esc(r.descricao)}${(r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>
+      <td class="num ${r.tipo==='Receita'?'pos':'neg'}">${r.tipo==='Receita'?'+':'−'} ${brl(r.valor)}</td></tr>`;
+  const quadro = (cls, titulo, l, colData, resumo, vazio, fn) => `<div class="box fin-q ${cls}">
+      <div class="fin-q-top"><h3>${titulo} <span class="qtd">${l.length}</span></h3><div class="fin-q-res">${resumo}</div></div>
+      ${l.length ? `<div class="tablewrap"><table><tr><th>${colData}</th><th>Beneficiário / Pagador</th><th>Descrição</th><th class="num">Valor</th></tr>
+        ${l.map(fn).join('')}</table></div>` : `<div class="empty">${vazio}${filtrado?' com esse filtro':''}.</div>`}</div>`;
+  const atrasados = pend.filter(r => dataLanc(r) < hj);
+  return `<div class="fin-duas">
+    ${quadro('feitos', '✅ Realizados', feitos, 'Pagamento',
+      `<span class="pos">+ ${brl(soma(feitos,'Receita'))}</span> <span class="neg">− ${brl(soma(feitos,'Despesa'))}</span>`,
+      'Nenhum lançamento pago ou recebido', r => linha(r, r.data, false))}
+    ${quadro('pend', '⏳ A pagar / A receber', pend, 'Vencimento',
+      `<span class="pos">+ ${brl(soma(pend,'Receita'))}</span> <span class="neg">− ${brl(soma(pend,'Despesa'))}</span>${atrasados.length?` <span class="atr-tag">${atrasados.length} atrasado(s)</span>`:''}`,
+      'Nada pendente', r => linha(r, dataLanc(r), dataLanc(r) < hj))}
+  </div>`;
 }
 /* mês filtrado: movimento do mês + saldo acumulado e previsão para o último dia do mês
    (saldo real de tudo que já foi pago/recebido até o fim do mês + o que vence até lá, inclusive atrasados) */

@@ -248,3 +248,24 @@ a.gcal:hover{background:rgba(34,211,238,.1)}
 .rep label.chk input{width:auto;margin:0}
 .rep-resumo{margin:10px 0 0;font-size:13px;color:var(--ink)}
 .rep-resumo:empty{display:none}
+
+/* ---------- financeiro em dois quadros ---------- */
+.fin-duas{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:start}
+.fin-q{padding:16px;min-width:0}
+.fin-q-top{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.fin-q-top h3{margin:0;display:flex;align-items:center;gap:8px}
+.fin-q .qtd{font-size:12px;font-weight:700;background:rgba(255,255,255,.08);color:var(--muted);border-radius:99px;padding:2px 9px}
+.fin-q-res{font-size:13px;font-weight:600;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.fin-q.feitos{border-top:3px solid #34d399}
+.fin-q.pend{border-top:3px solid #fbbf24}
+.fin-q th,.fin-q td{white-space:normal;padding:10px 10px;vertical-align:top}
+.fin-q td:first-child,.fin-q th:first-child{white-space:nowrap}
+.fin-q td:nth-child(2){min-width:140px}
+.fin-q .cat{font-size:11px;color:var(--muted);margin-top:2px;font-weight:400}
+.fin-q .num{white-space:nowrap}
+.fin-q tr.atrasado td:first-child{color:#f43f5e;font-weight:600}
+.fin-q .atr{font-size:10px;text-transform:uppercase;letter-spacing:.04em;color:#f43f5e}
+.atr-tag{font-size:11px;background:rgba(244,63,94,.15);color:#fb7185;border-radius:99px;padding:2px 9px}
+.muted{color:var(--muted)}
+@media (max-width:1250px){ .fin-duas{grid-template-columns:minmax(0,1fr)} }
+@media print{ .fin-duas{grid-template-columns:1fr} }
