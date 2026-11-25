@@ -4,7 +4,7 @@
 const STATUS_OBRA = ['Orçamento','Em andamento','Pausada','Concluída'];
 const STATUS_PROPOSTA = ['Rascunho','Enviada','Aprovada','Recusada'];
 const STATUS_CONTRATO = ['Em elaboração','Aguardando assinatura','Em vigor','Encerrado','Cancelado'];
-const CATEGORIAS  = ['Fornecedor','Cliente','Prestador de serviço','Funcionário'];
+const CATEGORIAS  = ['Fornecedor','Cliente','Prestador de serviço','Funcionário','Impostos'];
 const CAT_TABELA  = {'Fornecedor':'fornecedores','Cliente':'clientes','Prestador de serviço':'prestadores','Funcionário':'funcionarios'};   // de onde vêm as sugestões de nome
 const STATUS_AGENDA = ['Agendado','Concluído','Cancelado'];
 /* tipos de compromisso e a cor de cada um no calendário */
