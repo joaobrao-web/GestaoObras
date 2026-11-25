@@ -12,6 +12,7 @@ function lista(t){
     if (f.obra) rows = rows.filter(r => r.obra === f.obra);
     if (f.categoria) rows = rows.filter(r => r.categoria === f.categoria);
     if (f.tipo) rows = rows.filter(r => r.tipo === f.tipo);
+    var ateMes = f.mes ? rows.filter(r => dataLanc(r).slice(0,7) <= f.mes) : null;   // tudo até o fim do mês filtrado (para o saldo acumulado)
     if (f.mes)  rows = rows.filter(r => dataLanc(r).startsWith(f.mes));
     /* pendentes (sem pagamento) sempre no topo, vencimento mais próximo primeiro; depois os realizados, mais recentes primeiro */
     rows.sort((a,b)=> realizado(a)-realizado(b) || (realizado(a) ? dataLanc(b).localeCompare(dataLanc(a)) : dataLanc(a).localeCompare(dataLanc(b))));
@@ -34,7 +35,7 @@ function lista(t){
   let totais = '';
   if (t==='financeiro'){
     const filtrado = f.texto||f.obra||f.categoria||f.tipo||f.mes;
-    totais = cardsSaldo(totaisFin(rows), filtrado ? ' (filtro)' : '');
+    totais = f.mes ? cardsMes(totaisFin(rows), totaisFin(ateMes), f.mes) : cardsSaldo(totaisFin(rows), filtrado ? ' (filtro)' : '');
   }
   const clique = t==='obras' ? id=>`ir('obra:${id}')` : t==='propostas' ? id=>`ir('proposta:${id}')` : id=>`abrir('${t}','${id}')`;
 
@@ -51,5 +52,21 @@ function lista(t){
     <tr>${cols.map(c=>`<th class="${c.tipo==='dinheiro'?'num':''}">${c.lc || c.l.replace(' (R$)','')}</th>`).join('')}</tr>
     ${rows.map(r=>`<tr class="click" onclick="${clique(r.id)}">${cols.map((c,i)=>`<td class="${c.tipo==='dinheiro'?'num':''}">${mostrar(c, c.padrao && !r[c.k] ? c.padrao(r) : r[c.k])}${i===iClip && (r.anexos||[]).length?` <span class="clip" title="${r.anexos.length} documento(s) anexado(s)">📎${r.anexos.length}</span>`:''}</td>`).join('')}</tr>`).join('')}
   </table>` : `<div class="empty">Nada cadastrado${f.texto||f.obra||f.categoria||f.tipo||f.mes?' com esse filtro':''}. Clique em <b>+ Novo ${T.singular}</b>.</div>`}</div>`;
+}
+/* mês filtrado: movimento do mês + saldo acumulado e previsão para o último dia do mês
+   (saldo real de tudo que já foi pago/recebido até o fim do mês + o que vence até lá, inclusive atrasados) */
+function cardsMes(m, acum, mes){
+  const [a, n] = mes.split('-').map(Number), fim = dataBR(ymd(new Date(a, n, 0))), nome = MESES_NOME[n-1];
+  const v = x => `class="val ${x>=0?'pos':'neg'}">${brl(x)}`;
+  return `<div class="cards">
+    <div class="card"><div class="lbl">Recebido em ${nome}</div><div class="val pos">${brl(m.rec)}</div></div>
+    <div class="card"><div class="lbl">Pago em ${nome}</div><div class="val neg">${brl(m.desp)}</div></div>
+    <div class="card"><div class="lbl">Resultado de ${nome}</div><div ${v(m.saldo)}</div><div class="sub">só o movimento deste mês</div></div>
+  </div><div class="cards">
+    <div class="card destaque"><div class="lbl">💵 Saldo real acumulado</div><div ${v(acum.saldo)}</div><div class="sub">tudo que já foi pago / recebido até ${fim}</div></div>
+    <div class="card"><div class="lbl">A receber até ${fim}</div><div class="val">${brl(acum.aRec)}</div><div class="sub">inclui atrasados</div></div>
+    <div class="card"><div class="lbl">A pagar até ${fim}</div><div class="val">${brl(acum.aPag)}</div><div class="sub">inclui atrasados</div></div>
+    <div class="card destaque"><div class="lbl">🔮 Saldo previsto em ${fim}</div><div ${v(acum.previsto)}</div><div class="sub">saldo acumulado + a receber − a pagar</div></div>
+  </div>`;
 }
 function focoBusca(){ const b=document.getElementById('busca'); if(b){ b.focus(); b.setSelectionRange(b.value.length,b.value.length);} }
